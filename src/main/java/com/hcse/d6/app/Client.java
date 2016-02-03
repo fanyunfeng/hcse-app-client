@@ -11,11 +11,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
@@ -66,6 +68,8 @@ public class Client {
 
     private final String searchStr = "[S](([TX:TP:测试]))&([CL:CC:080])";
 
+    private String charset = "utf8";
+
     public Client() {
         ServiceDiscoveryService serviceDiscovery = new ServiceDiscoveryService();
 
@@ -83,7 +87,7 @@ public class Client {
         try {
             OutputStreamWriter writer;
 
-            writer = new OutputStreamWriter(os, Constant.charsetName);
+            writer = new OutputStreamWriter(os, charset);
 
             JsonGenerator generator = objectMapper.getJsonFactory().createJsonGenerator(writer);
 
@@ -270,9 +274,11 @@ public class Client {
 
         if (pktList.size() > 0) {
             BasePacket pkt = pktList.get(0);
-            
-            pkt.getDocument().setMd5Lite(md5Lite);
+
+            pkt.getDocument().setMd5LiteString(md5Lite);
         }
+
+        return response;
     }
 
     private D6ResponseMessage request(int mid, String md5Lite) throws MalformedURLException {
@@ -313,8 +319,6 @@ public class Client {
     }
 
     private void getDoc(String fileName) {
-        // File file = new File(fileName);
-
         FileInputStream in;
         try {
             in = new FileInputStream(fileName);
@@ -370,7 +374,7 @@ public class Client {
         options.addOption(OptionBuilder.withLongOpt("directory").withDescription("directory to save result").hasArg()
                 .withArgName("dir").create('d'));
 
-        options.addOption(OptionBuilder.withLongOpt("version").withDescription("version of request <1,2,[3]>.")
+        options.addOption(OptionBuilder.withLongOpt("version").withDescription("version of request <[1],2,3>.")
                 .hasArg().withArgName("version").create());
 
         options.addOption(OptionBuilder.withLongOpt("app").withDescription("app type <[base], logistic>.").hasArg()
@@ -388,20 +392,26 @@ public class Client {
         options.addOption(OptionBuilder.withLongOpt("object").withDescription("print document field by json array.")
                 .withArgName("object").create());
 
+        options.addOption(OptionBuilder.withLongOpt("charset").withDescription("charset to encoding JSON.")
+                .withArgName("charset").create());
+
         options.addOption(OptionBuilder.withLongOpt("verbose").withDescription("output debug infomoration.")
                 .withArgName("verbose").create('v'));
 
         CommandLineParser parser = new PosixParser();
 
         try {
-
-            Client client = new Client();
             CommandLine cmd = parser.parse(options, args);
 
             if (cmd.hasOption('h')) {
-                System.out.println(cmd.getArgList());
+                HelpFormatter hf = new HelpFormatter();
+                hf.setWidth(110);
+
+                hf.printHelp("d6.client", options, false);
                 return;
             }
+
+            Client client = new Client();
 
             if (cmd.hasOption("directory")) {
                 client.save = true;
@@ -439,6 +449,10 @@ public class Client {
                 if (value.equals("yes") || value.equalsIgnoreCase("true") || value.equals("1")) {
                     client.pretty = true;
                 }
+            }
+
+            if (cmd.hasOption("charset")) {
+                client.charset = cmd.getOptionValue("charset");
             }
 
             if (cmd.hasOption("array")) {
