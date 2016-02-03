@@ -57,7 +57,7 @@ public class Client {
     private String dir = ".";
 
     private boolean save = false;
-    private int defalutMid = 0;
+    private int defalutMid = 1;
     private String url = "data://127.0.0.1:3000";
 
     private int version = 1;
@@ -426,6 +426,14 @@ public class Client {
 
                 try {
                     client.version = Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+
+                }
+            }
+
+            if (cmd.hasOption("mid")) {
+                try {
+                    client.defalutMid = Integer.parseInt(cmd.getOptionValue("mid"));
                 } catch (NumberFormatException e) {
 
                 }
