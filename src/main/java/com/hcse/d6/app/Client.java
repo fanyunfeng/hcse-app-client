@@ -11,7 +11,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,7 +37,6 @@ import com.hcse.d6.protocol.message.D6RequestMessageV2;
 import com.hcse.d6.protocol.message.D6RequestMessageV3;
 import com.hcse.d6.protocol.message.D6ResponseMessage;
 import com.hcse.d6.service.DataServiceImpl;
-import com.hcse.protocol.util.Constant;
 import com.hcse.protocol.util.packet.BaseDoc;
 import com.hcse.protocol.util.packet.BasePacket;
 import com.hcse.service.common.ServiceDiscoveryService;
@@ -51,24 +49,24 @@ public class Client {
 
     DataServiceImpl service = new DataServiceImpl();
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    protected ObjectMapper objectMapper = new ObjectMapper();
 
-    private DocContentFormat fieldFormat = DocContentFormat.array;
-    private String dir = ".";
+    protected DocContentFormat fieldFormat = DocContentFormat.array;
+    protected String dir = ".";
 
-    private boolean save = false;
-    private int defalutMid = 1;
-    private String url = "data://127.0.0.1:3000";
+    protected boolean save = false;
+    protected int defalutMid = 1;
+    protected String url = "data://127.0.0.1:3000";
 
-    private int version = 1;
-    private boolean pretty = true;
-    private int firstLevelLength = 3;
+    protected int version = 1;
+    protected boolean pretty = true;
+    protected int firstLevelLength = 3;
 
-    private String app = "base";
+    protected String app = "base";
 
-    private final String searchStr = "[S](([TX:TP:测试]))&([CL:CC:080])";
+    protected final String searchStr = "[S](([TX:TP:测试]))&([CL:CC:080])";
 
-    private String charset = "utf8";
+    protected String charset = "utf8";
 
     public Client() {
         ServiceDiscoveryService serviceDiscovery = new ServiceDiscoveryService();
@@ -201,7 +199,7 @@ public class Client {
         }
     }
 
-    private D6ResponseMessageFactory createFactory() {
+    protected D6ResponseMessageFactory createFactory() {
         if (version != 3) {
             if (app.equals("base")) {
                 return new D6ResponseMessageFactory4Client();
@@ -372,7 +370,7 @@ public class Client {
                 .withArgName("md5Lite").create('m'));
 
         options.addOption(OptionBuilder.withLongOpt("directory").withDescription("directory to save result").hasArg()
-                .withArgName("dir").create('d'));
+                .withArgName("directory").create('d'));
 
         options.addOption(OptionBuilder.withLongOpt("version").withDescription("version of request <[1],2,3>.")
                 .hasArg().withArgName("version").create());
@@ -415,6 +413,7 @@ public class Client {
 
             if (cmd.hasOption("directory")) {
                 client.save = true;
+                client.dir = cmd.getOptionValue("directory");
             }
 
             if (cmd.hasOption("url")) {
