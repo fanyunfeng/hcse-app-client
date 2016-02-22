@@ -1,4 +1,4 @@
-package com.hcse.d6.app;
+package com.hcse.d6.app.ext;
 
 import com.hcse.d6.protocol.message.D6ResponseMessageClientDoc;
 import com.hcse.protocol.util.packet.FieldsMap;

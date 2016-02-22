@@ -1,5 +1,8 @@
 package com.hcse.d6.app;
 
+import com.hcse.d6.app.ext.D6ResponseMessageFactory4ExtClient;
+import com.hcse.d6.app.ext.D6ResponseMessageFactory4ExtJsonClient;
+import com.hcse.d6.app.ext.D6ResponseMessageFactory4ExtJsonLogistic;
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory;
 
 public class ExtClient extends Client {
