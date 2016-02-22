@@ -68,6 +68,8 @@ public class Client {
 
     protected String charset = "utf8";
 
+    protected Options options = new Options();
+
     public Client() {
         ServiceDiscoveryService serviceDiscovery = new ServiceDiscoveryService();
 
@@ -78,6 +80,10 @@ public class Client {
         public MyPrettyPrinter() {
             this._arrayIndenter = new Lf2SpacesIndenter();
         }
+    }
+
+    public Client newInstance() {
+        return new Client();
     }
 
     public void dumpJsonDoc(OutputStream os, BaseDoc doc) {
@@ -353,10 +359,78 @@ public class Client {
         }
     }
 
-    @SuppressWarnings("static-access")
-    public static void main(String[] args) {
+    protected void parseArgs(CommandLine cmd) throws ExitExeption {
+        if (cmd.hasOption('h')) {
+            HelpFormatter hf = new HelpFormatter();
+            hf.setWidth(110);
 
-        Options options = new Options();
+            hf.printHelp("d6.client", options, false);
+            throw new ExitExeption();
+        }
+
+        if (cmd.hasOption("directory")) {
+            save = true;
+            dir = cmd.getOptionValue("directory");
+        }
+
+        if (cmd.hasOption("url")) {
+            url = cmd.getOptionValue("url");
+        }
+
+        if (cmd.hasOption("version")) {
+            String value = cmd.getOptionValue("version");
+
+            try {
+                version = Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+
+            }
+        }
+
+        if (cmd.hasOption("mid")) {
+            try {
+                defalutMid = Integer.parseInt(cmd.getOptionValue("mid"));
+            } catch (NumberFormatException e) {
+
+            }
+        }
+
+        if (cmd.hasOption("app")) {
+            String value = cmd.getOptionValue("app");
+
+            value = value.toLowerCase();
+
+            if (value.equals("base") || value.equals("logistic")) {
+                app = value;
+            }
+        }
+
+        if (cmd.hasOption("pretty")) {
+            String value = cmd.getOptionValue("pretty");
+
+            value = value.toLowerCase();
+
+            if (value.equals("yes") || value.equalsIgnoreCase("true") || value.equals("1")) {
+                pretty = true;
+            }
+        }
+
+        if (cmd.hasOption("charset")) {
+            charset = cmd.getOptionValue("charset");
+        }
+
+        if (cmd.hasOption("array")) {
+            fieldFormat = DocContentFormat.array;
+        }
+
+        if (cmd.hasOption("object")) {
+            fieldFormat = DocContentFormat.object;
+        }
+
+    }
+
+    @SuppressWarnings("static-access")
+    protected void init() {
 
         options.addOption(new Option("h", "help", false, "print this message"));
 
@@ -395,94 +469,41 @@ public class Client {
 
         options.addOption(OptionBuilder.withLongOpt("verbose").withDescription("output debug infomoration.")
                 .withArgName("verbose").create('v'));
+    }
 
+    protected void run(CommandLine cmd) {
+        if (cmd.hasOption("file")) {
+            getDoc(cmd.getOptionValue("file"));
+            return;
+        }
+
+        if (cmd.hasOption("md5Lite")) {
+            String array[] = cmd.getOptionValue("md5Lite").split(",");
+            getDoc(array);
+            return;
+        }
+    }
+
+    protected void entry(String[] args) {
         CommandLineParser parser = new PosixParser();
 
         try {
             CommandLine cmd = parser.parse(options, args);
 
-            if (cmd.hasOption('h')) {
-                HelpFormatter hf = new HelpFormatter();
-                hf.setWidth(110);
+            parseArgs(cmd);
 
-                hf.printHelp("d6.client", options, false);
-                return;
-            }
-
-            Client client = new Client();
-
-            if (cmd.hasOption("directory")) {
-                client.save = true;
-                client.dir = cmd.getOptionValue("directory");
-            }
-
-            if (cmd.hasOption("url")) {
-                client.url = cmd.getOptionValue("url");
-            }
-
-            if (cmd.hasOption("version")) {
-                String value = cmd.getOptionValue("version");
-
-                try {
-                    client.version = Integer.parseInt(value);
-                } catch (NumberFormatException e) {
-
-                }
-            }
-
-            if (cmd.hasOption("mid")) {
-                try {
-                    client.defalutMid = Integer.parseInt(cmd.getOptionValue("mid"));
-                } catch (NumberFormatException e) {
-
-                }
-            }
-
-            if (cmd.hasOption("app")) {
-                String value = cmd.getOptionValue("app");
-
-                value = value.toLowerCase();
-
-                if (value.equals("base") || value.equals("logistic")) {
-                    client.app = value;
-                }
-            }
-
-            if (cmd.hasOption("pretty")) {
-                String value = cmd.getOptionValue("pretty");
-
-                value = value.toLowerCase();
-
-                if (value.equals("yes") || value.equalsIgnoreCase("true") || value.equals("1")) {
-                    client.pretty = true;
-                }
-            }
-
-            if (cmd.hasOption("charset")) {
-                client.charset = cmd.getOptionValue("charset");
-            }
-
-            if (cmd.hasOption("array")) {
-                client.fieldFormat = DocContentFormat.array;
-            }
-
-            if (cmd.hasOption("object")) {
-                client.fieldFormat = DocContentFormat.object;
-            }
-
-            if (cmd.hasOption("file")) {
-                client.getDoc(cmd.getOptionValue("file"));
-                return;
-            }
-
-            if (cmd.hasOption("md5Lite")) {
-                String array[] = cmd.getOptionValue("md5Lite").split(",");
-                client.getDoc(array);
-                return;
-            }
+            run(cmd);
 
         } catch (ParseException e) {
             e.printStackTrace();
+        } catch (ExitExeption e) {
+
         }
+    }
+
+    public static void main(String[] args) {
+        Client client = new Client();
+
+        client.entry(args);
     }
 }

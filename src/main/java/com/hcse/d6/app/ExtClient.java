@@ -18,5 +18,10 @@ public class ExtClient extends Client {
             return new D6ResponseMessageFactory4ExtJsonClient();
         }
     }
+    
+    public static void main(String[] args) {
+        ExtClient client = new ExtClient();
 
+        client.entry(args);
+    }
 }
