@@ -29,19 +29,11 @@ public class CounterTimer extends Counter {
     public double averageSpeed() {
         long c = super.get();
 
-        if (c == 0) {
-            return 0;
-        }
-
         return (double) current / c;
     }
 
     public double speed() {
         long c = super.diff();
-
-        if (c == 0) {
-            return 0;
-        }
 
         return (double) (current - last) / c;
     }

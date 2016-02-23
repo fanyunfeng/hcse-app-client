@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -52,7 +53,7 @@ public class Benchmark extends ClientBase {
 
     private int docPerReq = 5;
 
-    private int dumpInterval = 20;
+    private int dumpInterval = 20 * 1000;
 
     private long timeTime = 1000 * 60;
     private Date stopTime;
@@ -246,13 +247,11 @@ public class Benchmark extends ClientBase {
 
     void dumpInfo() {
         while (running) {
-            String dumpContent = CounterManager.getInstance().dump();
+            List<String> dumpContent = CounterManager.getInstance().dump();
 
-            String[] lines = dumpContent.split("\n");
+            for (String l : dumpContent) {
 
-            for (String l : lines) {
-
-                System.out.println(l);
+                // System.out.println(l);
                 logger.info(l);
             }
 

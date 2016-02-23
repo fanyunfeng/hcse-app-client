@@ -1,9 +1,22 @@
 package com.hcse.d6.app.util;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 
 public class CounterManager {
-    private long start;
+    private long start = System.currentTimeMillis();
+    private long second = 0;
+
+    DecimalFormat df = new DecimalFormat("#.0000");
+
+    private String toString(double v) {
+        if (Double.isNaN(v)) {
+            return "0";
+        }
+
+        return df.format(v);
+    }
 
     private ArrayList<Counter> counters = new ArrayList<Counter>();
 
@@ -23,18 +36,7 @@ public class CounterManager {
         start = System.currentTimeMillis();
     }
 
-    public String dump() {
-
-        for (Counter c : counters) {
-            c.save();
-        }
-
-        double ps;
-        long value;
-        long second = System.currentTimeMillis() - start;
-
-        second = second / 1000;
-
+    public String dumpCurrent() {
         StringBuilder sb = new StringBuilder();
 
         sb.append("current");
@@ -45,9 +47,13 @@ public class CounterManager {
             sb.append(c.get());
         }
 
-        sb.append('\n');
+        return sb.toString();
+    }
 
-        sb.append("diff");
+    public String dumpDiff() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("increment");
         for (Counter c : counters) {
             sb.append(" ");
             sb.append(c.getName());
@@ -55,52 +61,78 @@ public class CounterManager {
             sb.append(c.diff());
         }
 
-        sb.append('\n');
+        return sb.toString();
+    }
 
-        sb.append("averagePerSecode[c/s]");
-        for (Counter c : counters) {
-            sb.append(" ");
-            sb.append(c.getName());
-            sb.append(":");
-            value = c.get();
-            if (value == 0) {
-                sb.append("0");
-            } else {
-                ps = (double) value / second;
-                sb.append(ps);
-            }
+    public String dumpPerSecond() {
+        double ps;
+        long value;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("perSecond[c/s]");
+
+        if (second <= 0) {
+            sb.append(" second is zero.");
+            return sb.toString();
         }
 
-        sb.append('\n');
-
-        sb.append("perSecode[c/s]");
         for (Counter c : counters) {
             sb.append(" ");
             sb.append(c.getName());
             sb.append(":");
             value = c.diff();
-            if (value == 0) {
-                sb.append("0");
-            } else {
-                ps = (double) value / second;
-                sb.append(ps);
-            }
+
+            ps = (double) value / second;
+            sb.append(toString(ps));
         }
 
-        sb.append('\n');
+        return sb.toString();
+    }
+
+    public String dumpAveragePerSecond() {
+        double ps;
+        long value;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("averagePerSecond[c/s]");
+        for (Counter c : counters) {
+            sb.append(" ");
+            sb.append(c.getName());
+            sb.append(":");
+            value = c.get();
+
+            ps = (double) value / second;
+            sb.append(toString(ps));
+        }
+
+        return sb.toString();
+    }
+
+    public String dumpSpeed() {
+        StringBuilder sb = new StringBuilder();
 
         sb.append("speed[ms/c]");
+
+        if (second <= 0) {
+            sb.append(" second is zero.");
+            return sb.toString();
+        }
+
         for (Counter c : counters) {
             if (c instanceof CounterTimer) {
                 CounterTimer t = (CounterTimer) c;
                 sb.append(" ");
                 sb.append(c.getName());
                 sb.append(":");
-                sb.append(t.speed());
+                sb.append(toString(t.speed()));
             }
         }
 
-        sb.append('\n');
+        return sb.toString();
+    }
+
+    public String dumpAverageSpeed() {
+        StringBuilder sb = new StringBuilder();
 
         sb.append("averageSpeed[ms/c]");
         for (Counter c : counters) {
@@ -109,12 +141,33 @@ public class CounterManager {
                 sb.append(" ");
                 sb.append(c.getName());
                 sb.append(":");
-                sb.append(t.averageSpeed());
+                sb.append(toString(t.averageSpeed()));
             }
         }
 
-        sb.append('\n');
-
         return sb.toString();
+    }
+
+    public List<String> dump() {
+        for (Counter c : counters) {
+            c.save();
+        }
+
+        second = System.currentTimeMillis() - start;
+
+        second = second / 1000;
+
+        ArrayList<String> content = new ArrayList<String>();
+
+        content.add(dumpDiff());
+        content.add(dumpCurrent());
+
+        content.add(dumpPerSecond());
+        content.add(dumpAveragePerSecond());
+
+        content.add(dumpSpeed());
+        content.add(dumpAverageSpeed());
+
+        return content;
     }
 }
