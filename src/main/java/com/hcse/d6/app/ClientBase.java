@@ -13,7 +13,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.log4j.Logger;
 
-import com.hcse.d6.protocol.factory.D6ResponseMessageFactory;
+import com.hcse.d6.protocol.codec.D6ClientCodecFactory;
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4Client;
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4JsonClient;
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4Logistic;
@@ -140,15 +140,15 @@ public abstract class ClientBase {
         }
     }
 
-    protected D6ResponseMessageFactory createFactory() {
+    protected D6ClientCodecFactory createCodecFactory() {
         if (version != 3) {
             if (app.equals("base")) {
-                return new D6ResponseMessageFactory4Client();
+                return new D6ClientCodecFactory(new D6ResponseMessageFactory4Client());
             } else {
-                return new D6ResponseMessageFactory4Logistic();
+                return new D6ClientCodecFactory(new D6ResponseMessageFactory4Logistic());
             }
         } else {
-            return new D6ResponseMessageFactory4JsonClient();
+            return new D6ClientCodecFactory(new D6ResponseMessageFactory4JsonClient());
         }
     }
 
@@ -167,7 +167,7 @@ public abstract class ClientBase {
 
         request.setServiceAddress(url);
 
-        return service.search(request, createFactory());
+        return service.search(request, createCodecFactory());
     }
 
     protected D6ResponseMessage requestV2(TestRequest req) throws MalformedURLException, ServiceException {
@@ -185,7 +185,7 @@ public abstract class ClientBase {
 
         request.setServiceAddress(url);
 
-        return service.search(request, createFactory());
+        return service.search(request, createCodecFactory());
     }
 
     protected D6ResponseMessage requestV3(TestRequest req) throws MalformedURLException, ServiceException {
@@ -203,7 +203,7 @@ public abstract class ClientBase {
 
         request.setServiceAddress(url);
 
-        D6ResponseMessage response = service.search(request, createFactory());
+        D6ResponseMessage response = service.search(request, createCodecFactory());
 
         if (response == null) {
             return null;
