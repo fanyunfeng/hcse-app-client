@@ -1,4 +1,4 @@
-package com.hcse.d6.app;
+package com.hcse.d6.app.util;
 
 import java.util.ArrayList;
 
@@ -57,7 +57,7 @@ public class CounterManager {
 
         sb.append('\n');
 
-        sb.append("second");
+        sb.append("averagePerSecode[c/s]");
         for (Counter c : counters) {
             sb.append(" ");
             sb.append(c.getName());
@@ -73,7 +73,7 @@ public class CounterManager {
 
         sb.append('\n');
 
-        sb.append("diffsecond");
+        sb.append("perSecode[c/s]");
         for (Counter c : counters) {
             sb.append(" ");
             sb.append(c.getName());
@@ -89,7 +89,7 @@ public class CounterManager {
 
         sb.append('\n');
 
-        sb.append("speed");
+        sb.append("speed[ms/c]");
         for (Counter c : counters) {
             if (c instanceof CounterTimer) {
                 CounterTimer t = (CounterTimer) c;
@@ -102,7 +102,7 @@ public class CounterManager {
 
         sb.append('\n');
 
-        sb.append("averageSpeed");
+        sb.append("averageSpeed[ms/c]");
         for (Counter c : counters) {
             if (c instanceof CounterTimer) {
                 CounterTimer t = (CounterTimer) c;

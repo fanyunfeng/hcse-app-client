@@ -14,11 +14,17 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.log4j.Logger;
 
+import com.hcse.d6.app.util.Counter;
+import com.hcse.d6.app.util.CounterManager;
+import com.hcse.d6.app.util.CounterTimer;
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory;
 import com.hcse.d6.protocol.message.D6ResponseMessage;
 
 public class Benchmark extends ClientBase {
+    protected final Logger logger = Logger.getLogger(Benchmark.class);
+
     class TestTask implements Runnable {
         TestRequest req;
 
@@ -32,8 +38,6 @@ public class Benchmark extends ClientBase {
         }
     }
 
-    private boolean running = true;
-
     private Counter initialCounter = new Counter("initial");
     private Counter launchCounter = new Counter("launch");
     private CounterTimer successCounter = new CounterTimer("success");
@@ -44,7 +48,7 @@ public class Benchmark extends ClientBase {
 
     private int threadNumber = 10;
 
-    private int qps = 100;
+    private int qps = 10;
 
     private int docPerReq = 5;
 
@@ -57,8 +61,19 @@ public class Benchmark extends ClientBase {
 
     private Random random = new Random(System.currentTimeMillis());
 
-    private Thread initialThread;
-    private Thread dumpTread;
+    private Thread initialThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            initialRequest();
+        }
+    });
+
+    private Thread dumpTread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+            dumpInfo();
+        }
+    });
 
     private int sequence = 0;
 
@@ -86,7 +101,7 @@ public class Benchmark extends ClientBase {
         return ret;
     }
 
-    public ArrayList<TestRequestItem> genSeqRequest() {
+    public ArrayList<TestRequestItem> genSequenceRequest() {
         ArrayList<TestRequestItem> ret = new ArrayList<TestRequestItem>(docPerReq);
 
         int requestInfoSize = requestInfo.size();
@@ -109,7 +124,7 @@ public class Benchmark extends ClientBase {
 
     private ArrayList<TestRequestItem> getRequest() {
         if (mode == 1) {
-            return genSeqRequest();
+            return genSequenceRequest();
         } else {
             return genRandomRequest();
         }
@@ -143,8 +158,8 @@ public class Benchmark extends ClientBase {
         try {
             in = new FileInputStream(fileName);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
 
+            logger.error("read failed. name:" + fileName, e);
             return;
         }
 
@@ -160,7 +175,7 @@ public class Benchmark extends ClientBase {
                 addRequest(line);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("read failed.", e);
         }
     }
 
@@ -192,10 +207,9 @@ public class Benchmark extends ClientBase {
                     Thread.sleep(sleep);
                 } catch (InterruptedException e) {
 
-                    e.printStackTrace();
                 }
             } else if (sleep < 0) {
-
+                logger.error("cant initial request " + qps + " per second.");
             }
         }
     }
@@ -234,7 +248,13 @@ public class Benchmark extends ClientBase {
         while (running) {
             String dumpContent = CounterManager.getInstance().dump();
 
-            System.out.println(dumpContent);
+            String[] lines = dumpContent.split("\n");
+
+            for (String l : lines) {
+
+                System.out.println(l);
+                logger.info(l);
+            }
 
             Date now = new Date();
 
@@ -250,9 +270,10 @@ public class Benchmark extends ClientBase {
                 Thread.sleep(dumpInterval);
             } catch (InterruptedException e) {
 
-                e.printStackTrace();
             }
         }
+
+        logger.info("press test stop.");
     }
 
     protected D6ResponseMessageFactory createFactory() {
@@ -266,13 +287,13 @@ public class Benchmark extends ClientBase {
         options.addOption(OptionBuilder.withLongOpt("file").withDescription("md5 file name.").hasArg()
                 .withArgName("file").create('f'));
 
-        options.addOption(OptionBuilder.withLongOpt("md5Lite").withDescription("md5Lite list split by ','").hasArg()
+        options.addOption(OptionBuilder.withLongOpt("md5Lite").withDescription("md5Lite list. split by ','").hasArg()
                 .withArgName("md5Lite").create('m'));
 
         options.addOption(OptionBuilder.withLongOpt("thread").withDescription("max thread. default:10").hasArg()
                 .withArgName("thread").create('t'));
 
-        options.addOption(OptionBuilder.withLongOpt("qps").withDescription("request per secode. default:100").hasArg()
+        options.addOption(OptionBuilder.withLongOpt("qps").withDescription("request per secode. default:10").hasArg()
                 .withArgName("qps").create('q'));
 
         options.addOption(OptionBuilder.withLongOpt("docPerReq")
@@ -290,7 +311,6 @@ public class Benchmark extends ClientBase {
 
         options.addOption(OptionBuilder.withLongOpt("random").withDescription("generate request mode")
                 .withArgName("random").create());
-
     }
 
     protected void parseArgs(CommandLine cmd) throws ExitExeption {
@@ -364,6 +384,10 @@ public class Benchmark extends ClientBase {
     @Override
     protected void run(CommandLine cmd) throws ExitExeption {
         //
+        logger.info("press test start.");
+        logger.info("size of request doc:" + requestInfo.size());
+
+        //
         service.open(super.createFactory());
 
         // set stop time
@@ -374,36 +398,26 @@ public class Benchmark extends ClientBase {
         // start times
         CounterManager.getInstance().start();
 
-        // start intial thread
+        //
         executor = Executors.newFixedThreadPool(threadNumber);
 
-        initialThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                initialRequest();
-            }
-        });
-
+        // start intial thread
         initialThread.start();
 
         // start dump thread
-        dumpTread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                dumpInfo();
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
         dumpTread.start();
     }
 
+    protected void stop() {
+        super.stop();
+
+        logger.info("press test stop.");
+
+        executor.shutdown();
+    }
+
     public static void main(String[] args) {
-        ClientBase client = new Client();
+        ClientBase client = new Benchmark();
 
         client.entry(args);
     }

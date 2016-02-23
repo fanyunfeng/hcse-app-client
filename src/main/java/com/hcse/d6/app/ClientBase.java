@@ -1,7 +1,6 @@
 package com.hcse.d6.app;
 
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -12,6 +11,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.log4j.Logger;
 
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory;
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4Client;
@@ -28,6 +28,8 @@ import com.hcse.protocol.util.packet.BasePacket;
 import com.hcse.service.common.ServiceDiscoveryService;
 
 public abstract class ClientBase {
+    protected final Logger logger = Logger.getLogger(ClientBase.class);
+
     protected Options options = new Options();
     protected String app = "base";
     protected String url = "data://127.0.0.1:3000";
@@ -35,6 +37,7 @@ public abstract class ClientBase {
     protected DataServiceImpl service = new DataServiceImpl();
     protected int defalutMid = 1;
     protected final String searchStr = "[S](([TX:TP:测试]))&([CL:CC:080])";
+    protected boolean running = true;
 
     public ClientBase() {
         ServiceDiscoveryService serviceDiscovery = new ServiceDiscoveryService();
@@ -71,6 +74,14 @@ public abstract class ClientBase {
             throw new ExitExeption();
         }
 
+        if (cmd.hasOption("mid")) {
+            try {
+                defalutMid = Integer.parseInt(cmd.getOptionValue("mid"));
+            } catch (NumberFormatException e) {
+                logger.error("parse parameter mid failed. [" + cmd.getOptionValue("mid") + "]");
+            }
+        }
+
         if (cmd.hasOption("url")) {
             url = cmd.getOptionValue("url");
         }
@@ -81,7 +92,7 @@ public abstract class ClientBase {
             try {
                 version = Integer.parseInt(value);
             } catch (NumberFormatException e) {
-
+                logger.error("parse parameter version failed. [" + cmd.getOptionValue("version") + "]");
             }
         }
 
@@ -96,9 +107,20 @@ public abstract class ClientBase {
         }
     }
 
+    protected void stop() {
+        running = false;
+    }
+
     protected abstract void run(CommandLine cmd) throws ExitExeption;
 
     protected void entry(String[] args) {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                stop();
+            }
+        }));
+
         CommandLineParser parser = new PosixParser();
 
         try {
@@ -111,7 +133,7 @@ public abstract class ClientBase {
             run(cmd);
 
         } catch (ParseException e) {
-            e.printStackTrace();
+            logger.error("ParseException", e);
         } catch (ExitExeption e) {
 
         }

@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
+import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.util.DefaultPrettyPrinter;
@@ -28,6 +29,8 @@ enum DocContentFormat {
 };
 
 public class Client extends ClientBase {
+    protected final Logger logger = Logger.getLogger(Client.class);
+
     protected ObjectMapper objectMapper = new ObjectMapper();
 
     protected DocContentFormat fieldFormat = DocContentFormat.array;
@@ -114,11 +117,9 @@ public class Client extends ClientBase {
             writer.flush();
 
         } catch (UnsupportedEncodingException e) {
-
-            e.printStackTrace();
+            logger.error("dump response failed.", e);
         } catch (IOException e) {
-
-            e.printStackTrace();
+            logger.error("dump response failed.", e);
         }
     }
 
@@ -150,7 +151,7 @@ public class Client extends ClientBase {
         }
     }
 
-    private void getOneDoc(String midAndDoc) throws FileNotFoundException {
+    private void getOneDoc(String midAndDoc) {
         String[] fields = midAndDoc.split(":");
 
         try {
@@ -160,11 +161,11 @@ public class Client extends ClientBase {
                 getOneDoc(defalutMid, fields[0]);
             }
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            logger.error("parse machine id failed.", e);
         }
     }
 
-    private void getOneDoc(int mid, String md5Lite) throws FileNotFoundException {
+    private void getOneDoc(int mid, String md5Lite) {
         try {
             D6ResponseMessage response = request(mid, md5Lite);
 
@@ -184,7 +185,7 @@ public class Client extends ClientBase {
 
             closeOutputStream(os);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("get doc from server failed.", e);
         }
     }
 
@@ -210,18 +211,13 @@ public class Client extends ClientBase {
             }
         } catch (IOException e) {
 
-            e.printStackTrace();
+            logger.error("get doc from server failed.", e);
         }
     }
 
     private void getDoc(String[] md5LiteList) {
         for (String v : md5LiteList) {
-            try {
-                getOneDoc(v);
-            } catch (FileNotFoundException e) {
-
-                e.printStackTrace();
-            }
+            getOneDoc(v);
         }
     }
 
@@ -257,14 +253,6 @@ public class Client extends ClientBase {
         if (cmd.hasOption("directory")) {
             save = true;
             dir = cmd.getOptionValue("directory");
-        }
-
-        if (cmd.hasOption("mid")) {
-            try {
-                defalutMid = Integer.parseInt(cmd.getOptionValue("mid"));
-            } catch (NumberFormatException e) {
-
-            }
         }
 
         if (cmd.hasOption("pretty")) {

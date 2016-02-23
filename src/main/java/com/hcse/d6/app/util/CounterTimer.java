@@ -1,4 +1,4 @@
-package com.hcse.d6.app;
+package com.hcse.d6.app.util;
 
 import java.util.concurrent.atomic.AtomicLong;
 
