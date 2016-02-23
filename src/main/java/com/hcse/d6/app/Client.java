@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -20,56 +19,30 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.util.DefaultPrettyPrinter;
 
-import com.hcse.d6.protocol.factory.D6ResponseMessageFactory;
-import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4Client;
-import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4JsonClient;
-import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4Logistic;
-import com.hcse.d6.protocol.message.D6RequestMessage;
-import com.hcse.d6.protocol.message.D6RequestMessageDoc;
-import com.hcse.d6.protocol.message.D6RequestMessageV1;
-import com.hcse.d6.protocol.message.D6RequestMessageV2;
-import com.hcse.d6.protocol.message.D6RequestMessageV3;
 import com.hcse.d6.protocol.message.D6ResponseMessage;
-import com.hcse.d6.service.DataServiceImpl;
 import com.hcse.protocol.util.packet.BaseDoc;
 import com.hcse.protocol.util.packet.BasePacket;
-import com.hcse.service.common.ServiceDiscoveryService;
 
 enum DocContentFormat {
     array, object
 };
 
 public class Client extends ClientBase {
-    DataServiceImpl service = new DataServiceImpl();
-
     protected ObjectMapper objectMapper = new ObjectMapper();
 
     protected DocContentFormat fieldFormat = DocContentFormat.array;
     protected String dir = ".";
 
     protected boolean save = false;
-    protected int defalutMid = 1;
     protected boolean pretty = true;
     protected int firstLevelLength = 3;
 
-    protected final String searchStr = "[S](([TX:TP:测试]))&([CL:CC:080])";
-
     protected String charset = "utf8";
-
-    public Client() {
-        ServiceDiscoveryService serviceDiscovery = new ServiceDiscoveryService();
-
-        service.setServiceDiscoveryService(serviceDiscovery);
-    }
 
     class MyPrettyPrinter extends DefaultPrettyPrinter {
         public MyPrettyPrinter() {
             this._arrayIndenter = new Lf2SpacesIndenter();
         }
-    }
-
-    public ClientBase newInstance() {
-        return new Client();
     }
 
     public void dumpJsonDoc(OutputStream os, BaseDoc doc) {
@@ -191,99 +164,6 @@ public class Client extends ClientBase {
         }
     }
 
-    protected D6ResponseMessageFactory createFactory() {
-        if (version != 3) {
-            if (app.equals("base")) {
-                return new D6ResponseMessageFactory4Client();
-            } else {
-                return new D6ResponseMessageFactory4Logistic();
-            }
-        } else {
-            return new D6ResponseMessageFactory4JsonClient();
-        }
-    }
-
-    private D6ResponseMessage requestV1(int mid, String md5) throws MalformedURLException {
-        D6RequestMessage request = new D6RequestMessageV1(searchStr);
-
-        request.setDocsCount(1);
-
-        {
-            D6RequestMessageDoc doc = request.getDocById(0);
-            doc.setMachineId(mid);
-            doc.setMd5Lite(md5);
-            doc.setIndentCount(0);
-            doc.setWeight(0);
-        }
-
-        request.setServiceAddress(url);
-
-        return service.search(request, createFactory());
-    }
-
-    private D6ResponseMessage requestV2(int mid, String md5) throws MalformedURLException {
-        D6RequestMessage request = new D6RequestMessageV2(searchStr);
-
-        request.setDocsCount(1);
-
-        {
-            D6RequestMessageDoc doc = request.getDocById(0);
-            doc.setMachineId(mid);
-            doc.setMd5Lite(md5);
-            doc.setIndentCount(0);
-            doc.setWeight(0);
-        }
-
-        request.setServiceAddress(url);
-
-        return service.search(request, createFactory());
-    }
-
-    private D6ResponseMessage requestV3(int mid, String md5Lite) throws MalformedURLException {
-        D6RequestMessage request = new D6RequestMessageV3(searchStr);
-
-        request.setDocsCount(1);
-
-        {
-            D6RequestMessageDoc doc = request.getDocById(0);
-            doc.setMachineId(mid);
-            doc.setMd5Lite(md5Lite);
-            doc.setIndentCount(0);
-            doc.setWeight(0);
-        }
-
-        request.setServiceAddress(url);
-
-        D6ResponseMessage response = service.search(request, createFactory());
-
-        if (response == null) {
-            return null;
-        }
-
-        List<BasePacket> pktList = response.getDocs();
-
-        if (pktList.size() > 0) {
-            BasePacket pkt = pktList.get(0);
-
-            pkt.getDocument().setMd5LiteString(md5Lite);
-        }
-
-        return response;
-    }
-
-    private D6ResponseMessage request(int mid, String md5Lite) throws MalformedURLException {
-        switch (version) {
-        case 1:
-            return requestV1(mid, md5Lite);
-        case 2:
-            return requestV2(mid, md5Lite);
-        case 3:
-            return requestV3(mid, md5Lite);
-        }
-
-        return null;
-    }
-
     private void getOneDoc(int mid, String md5Lite) throws FileNotFoundException {
         try {
             D6ResponseMessage response = request(mid, md5Lite);
@@ -352,14 +232,11 @@ public class Client extends ClientBase {
         options.addOption(OptionBuilder.withLongOpt("file").withDescription("md5 file name.").hasArg()
                 .withArgName("file").create('f'));
 
-        options.addOption(OptionBuilder.withLongOpt("md5Lite").withDescription("md5Lite list split by ,").hasArg()
+        options.addOption(OptionBuilder.withLongOpt("md5Lite").withDescription("md5Lite list split by ','").hasArg()
                 .withArgName("md5Lite").create('m'));
 
         options.addOption(OptionBuilder.withLongOpt("directory").withDescription("directory to save result").hasArg()
                 .withArgName("directory").create('d'));
-
-        options.addOption(OptionBuilder.withLongOpt("mid").withDescription("default machine id. default=1").hasArg()
-                .withArgName("mid").create());
 
         options.addOption(OptionBuilder.withLongOpt("pretty").withDescription("print pretty format. true/false")
                 .hasArg().withArgName("pretty").create());
@@ -411,7 +288,6 @@ public class Client extends ClientBase {
         if (cmd.hasOption("object")) {
             fieldFormat = DocContentFormat.object;
         }
-
     }
 
     protected void run(CommandLine cmd) {
