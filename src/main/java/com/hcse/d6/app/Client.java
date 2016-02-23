@@ -15,13 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.util.DefaultPrettyPrinter;
@@ -45,8 +39,7 @@ enum DocContentFormat {
     array, object
 };
 
-public class Client {
-
+public class Client extends ClientBase {
     DataServiceImpl service = new DataServiceImpl();
 
     protected ObjectMapper objectMapper = new ObjectMapper();
@@ -56,19 +49,12 @@ public class Client {
 
     protected boolean save = false;
     protected int defalutMid = 1;
-    protected String url = "data://127.0.0.1:3000";
-
-    protected int version = 1;
     protected boolean pretty = true;
     protected int firstLevelLength = 3;
-
-    protected String app = "base";
 
     protected final String searchStr = "[S](([TX:TP:测试]))&([CL:CC:080])";
 
     protected String charset = "utf8";
-
-    protected Options options = new Options();
 
     public Client() {
         ServiceDiscoveryService serviceDiscovery = new ServiceDiscoveryService();
@@ -82,7 +68,7 @@ public class Client {
         }
     }
 
-    public Client newInstance() {
+    public ClientBase newInstance() {
         return new Client();
     }
 
@@ -359,32 +345,41 @@ public class Client {
         }
     }
 
-    protected void parseArgs(CommandLine cmd) throws ExitExeption {
-        if (cmd.hasOption('h')) {
-            HelpFormatter hf = new HelpFormatter();
-            hf.setWidth(110);
+    @SuppressWarnings("static-access")
+    protected void init() throws ExitExeption {
+        super.init();
 
-            hf.printHelp("d6.client", options, false);
-            throw new ExitExeption();
-        }
+        options.addOption(OptionBuilder.withLongOpt("file").withDescription("md5 file name.").hasArg()
+                .withArgName("file").create('f'));
+
+        options.addOption(OptionBuilder.withLongOpt("md5Lite").withDescription("md5Lite list split by ,").hasArg()
+                .withArgName("md5Lite").create('m'));
+
+        options.addOption(OptionBuilder.withLongOpt("directory").withDescription("directory to save result").hasArg()
+                .withArgName("directory").create('d'));
+
+        options.addOption(OptionBuilder.withLongOpt("mid").withDescription("default machine id. default=1").hasArg()
+                .withArgName("mid").create());
+
+        options.addOption(OptionBuilder.withLongOpt("pretty").withDescription("print pretty format. true/false")
+                .hasArg().withArgName("pretty").create());
+
+        options.addOption(OptionBuilder.withLongOpt("array").withDescription("print document field by json array.")
+                .withArgName("array").create());
+
+        options.addOption(OptionBuilder.withLongOpt("object").withDescription("print document field by json array.")
+                .withArgName("object").create());
+
+        options.addOption(OptionBuilder.withLongOpt("charset").withDescription("charset to encoding JSON.")
+                .withArgName("charset").create());
+    }
+
+    protected void parseArgs(CommandLine cmd) throws ExitExeption {
+        super.parseArgs(cmd);
 
         if (cmd.hasOption("directory")) {
             save = true;
             dir = cmd.getOptionValue("directory");
-        }
-
-        if (cmd.hasOption("url")) {
-            url = cmd.getOptionValue("url");
-        }
-
-        if (cmd.hasOption("version")) {
-            String value = cmd.getOptionValue("version");
-
-            try {
-                version = Integer.parseInt(value);
-            } catch (NumberFormatException e) {
-
-            }
         }
 
         if (cmd.hasOption("mid")) {
@@ -392,16 +387,6 @@ public class Client {
                 defalutMid = Integer.parseInt(cmd.getOptionValue("mid"));
             } catch (NumberFormatException e) {
 
-            }
-        }
-
-        if (cmd.hasOption("app")) {
-            String value = cmd.getOptionValue("app");
-
-            value = value.toLowerCase();
-
-            if (value.equals("base") || value.equals("logistic")) {
-                app = value;
             }
         }
 
@@ -429,48 +414,6 @@ public class Client {
 
     }
 
-    @SuppressWarnings("static-access")
-    protected void init() {
-
-        options.addOption(new Option("h", "help", false, "print this message"));
-
-        options.addOption(OptionBuilder.withLongOpt("url").withDescription("url of service: data://127.0.0.1:3000")
-                .hasArg().withArgName("url").create('u'));
-
-        options.addOption(OptionBuilder.withLongOpt("file").withDescription("md5 file name.").hasArg()
-                .withArgName("file").create('f'));
-
-        options.addOption(OptionBuilder.withLongOpt("md5Lite").withDescription("md5Lite list split by ,").hasArg()
-                .withArgName("md5Lite").create('m'));
-
-        options.addOption(OptionBuilder.withLongOpt("directory").withDescription("directory to save result").hasArg()
-                .withArgName("directory").create('d'));
-
-        options.addOption(OptionBuilder.withLongOpt("version").withDescription("version of request <[1],2,3>.")
-                .hasArg().withArgName("version").create());
-
-        options.addOption(OptionBuilder.withLongOpt("app").withDescription("app type <[base], logistic>.").hasArg()
-                .withArgName("app").create());
-
-        options.addOption(OptionBuilder.withLongOpt("mid").withDescription("default machine id. default=0").hasArg()
-                .withArgName("mid").create());
-
-        options.addOption(OptionBuilder.withLongOpt("pretty").withDescription("print pretty format. true/false")
-                .hasArg().withArgName("pretty").create());
-
-        options.addOption(OptionBuilder.withLongOpt("array").withDescription("print document field by json array.")
-                .withArgName("array").create());
-
-        options.addOption(OptionBuilder.withLongOpt("object").withDescription("print document field by json array.")
-                .withArgName("object").create());
-
-        options.addOption(OptionBuilder.withLongOpt("charset").withDescription("charset to encoding JSON.")
-                .withArgName("charset").create());
-
-        options.addOption(OptionBuilder.withLongOpt("verbose").withDescription("output debug infomoration.")
-                .withArgName("verbose").create('v'));
-    }
-
     protected void run(CommandLine cmd) {
         if (cmd.hasOption("file")) {
             getDoc(cmd.getOptionValue("file"));
@@ -484,25 +427,8 @@ public class Client {
         }
     }
 
-    protected void entry(String[] args) {
-        CommandLineParser parser = new PosixParser();
-
-        try {
-            CommandLine cmd = parser.parse(options, args);
-
-            parseArgs(cmd);
-
-            run(cmd);
-
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (ExitExeption e) {
-
-        }
-    }
-
     public static void main(String[] args) {
-        Client client = new Client();
+        ClientBase client = new Client();
 
         client.entry(args);
     }
