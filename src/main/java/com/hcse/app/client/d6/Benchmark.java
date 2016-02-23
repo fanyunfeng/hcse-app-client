@@ -1,4 +1,4 @@
-package com.hcse.d6.app;
+package com.hcse.app.client.d6;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -18,9 +18,11 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.log4j.Logger;
 
-import com.hcse.d6.app.util.Counter;
-import com.hcse.d6.app.util.CounterManager;
-import com.hcse.d6.app.util.CounterTimer;
+import com.hcse.app.client.CommonClient;
+import com.hcse.app.client.ExitExeption;
+import com.hcse.app.client.util.Counter;
+import com.hcse.app.client.util.CounterManager;
+import com.hcse.app.client.util.CounterTimer;
 import com.hcse.d6.protocol.codec.D6ClientCodecFactory;
 import com.hcse.d6.protocol.message.D6ResponseMessage;
 import com.hcse.service.ConnectTimeout;
@@ -461,7 +463,7 @@ public class Benchmark extends ClientBase {
     }
 
     public static void main(String[] args) {
-        ClientBase client = new Benchmark();
+    	Benchmark client = new Benchmark();
 
         client.entry(args);
     }

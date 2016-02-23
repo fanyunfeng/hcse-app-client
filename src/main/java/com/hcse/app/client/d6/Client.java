@@ -1,4 +1,4 @@
-package com.hcse.d6.app;
+package com.hcse.app.client.d6;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,6 +20,8 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.util.DefaultPrettyPrinter;
 
+import com.hcse.app.client.CommonClient;
+import com.hcse.app.client.ExitExeption;
 import com.hcse.d6.protocol.message.D6ResponseMessage;
 import com.hcse.protocol.util.packet.BaseDoc;
 import com.hcse.protocol.util.packet.BasePacket;
@@ -292,7 +294,7 @@ public class Client extends ClientBase {
     }
 
     public static void main(String[] args) {
-        ClientBase client = new Client();
+    	Client client = new Client();
 
         client.entry(args);
     }

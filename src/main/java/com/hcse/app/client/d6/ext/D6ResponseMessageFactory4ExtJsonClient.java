@@ -1,4 +1,4 @@
-package com.hcse.d6.app.ext;
+package com.hcse.app.client.d6.ext;
 
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory;
 import com.hcse.d6.protocol.message.D6ResponseMessageClientDoc;

@@ -1,18 +1,16 @@
-package com.hcse.d6.app;
+package com.hcse.app.client.d6;
 
 import java.net.MalformedURLException;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.apache.log4j.Logger;
 
+import com.hcse.app.client.CommonClient;
+import com.hcse.app.client.ExitExeption;
 import com.hcse.d6.protocol.codec.D6ClientCodecFactory;
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4Client;
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4JsonClient;
@@ -28,63 +26,39 @@ import com.hcse.protocol.util.packet.BasePacket;
 import com.hcse.service.ServiceException;
 import com.hcse.service.common.ServiceDiscoveryService;
 
-public abstract class ClientBase {
-    protected final Logger logger = Logger.getLogger(ClientBase.class);
+public abstract class ClientBase extends CommonClient {
+    public final Logger logger = Logger.getLogger(ClientBase.class);
 
-    protected Options options = new Options();
-    protected String app = "base";
-    protected String url = "data://127.0.0.1:3000";
     protected int version = 1;
     protected DataServiceImpl service = new DataServiceImpl();
     protected int defalutMid = 1;
     protected final String searchStr = "[S](([TX:TP:测试]))&([CL:CC:080])";
-    protected volatile boolean running = true;
-
     public ClientBase() {
         ServiceDiscoveryService serviceDiscovery = new ServiceDiscoveryService();
 
         service.setServiceDiscoveryService(serviceDiscovery);
     }
 
+    protected String getDefaultUrl(){
+    	return "data://127.0.0.1:3000";
+    }
+    
     @SuppressWarnings("static-access")
-    protected void init() throws ExitExeption {
-        options.addOption(new Option("h", "help", false, "print this message"));
-
-        options.addOption(OptionBuilder.withLongOpt("url").withDescription("url of service: data://127.0.0.1:3000")
-                .hasArg().withArgName("url").create('u'));
-
-        options.addOption(OptionBuilder.withLongOpt("app").withDescription("app type <[base], logistic>.").hasArg()
-                .withArgName("app").create());
-
+	protected void init() throws ExitExeption {
         options.addOption(OptionBuilder.withLongOpt("mid").withDescription("default machine id. default=1").hasArg()
                 .withArgName("mid").create());
 
         options.addOption(OptionBuilder.withLongOpt("version").withDescription("version of request <[1],2,3>.")
                 .hasArg().withArgName("version").create());
-
-        options.addOption(OptionBuilder.withLongOpt("verbose").withDescription("output debug infomoration.")
-                .withArgName("verbose").create('v'));
     }
 
     protected void parseArgs(CommandLine cmd) throws ExitExeption {
-        if (cmd.hasOption('h')) {
-            HelpFormatter hf = new HelpFormatter();
-            hf.setWidth(110);
-
-            hf.printHelp("d6.client", options, false);
-            throw new ExitExeption();
-        }
-
         if (cmd.hasOption("mid")) {
             try {
                 defalutMid = Integer.parseInt(cmd.getOptionValue("mid"));
             } catch (NumberFormatException e) {
                 logger.error("parse parameter mid failed. [" + cmd.getOptionValue("mid") + "]");
             }
-        }
-
-        if (cmd.hasOption("url")) {
-            url = cmd.getOptionValue("url");
         }
 
         if (cmd.hasOption("version")) {
@@ -95,48 +69,6 @@ public abstract class ClientBase {
             } catch (NumberFormatException e) {
                 logger.error("parse parameter version failed. [" + cmd.getOptionValue("version") + "]");
             }
-        }
-
-        if (cmd.hasOption("app")) {
-            String value = cmd.getOptionValue("app");
-
-            value = value.toLowerCase();
-
-            if (value.equals("base") || value.equals("logistic")) {
-                app = value;
-            }
-        }
-    }
-
-    protected void stop() {
-        running = false;
-    }
-
-    protected abstract void run(CommandLine cmd) throws ExitExeption;
-
-    protected void entry(String[] args) {
-        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-            @Override
-            public void run() {
-                stop();
-            }
-        }));
-
-        CommandLineParser parser = new PosixParser();
-
-        try {
-            init();
-
-            CommandLine cmd = parser.parse(options, args);
-
-            parseArgs(cmd);
-
-            run(cmd);
-
-        } catch (ParseException e) {
-            logger.error("ParseException", e);
-        } catch (ExitExeption e) {
-
         }
     }
 
