@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -22,6 +23,9 @@ import com.hcse.d6.app.util.CounterManager;
 import com.hcse.d6.app.util.CounterTimer;
 import com.hcse.d6.protocol.factory.D6ResponseMessageFactory;
 import com.hcse.d6.protocol.message.D6ResponseMessage;
+import com.hcse.service.ConnectTimeout;
+import com.hcse.service.RequestTimeout;
+import com.hcse.service.ServiceException;
 
 public class Benchmark extends ClientBase {
     protected final Logger logger = Logger.getLogger(Benchmark.class);
@@ -43,13 +47,17 @@ public class Benchmark extends ClientBase {
     private Counter launchCounter = new Counter("launch");
     private CounterTimer successCounter = new CounterTimer("success");
     private CounterTimer failedCounter = new CounterTimer("failed");
+
     private CounterTimer emptyCounter = new CounterTimer("empty");
+
+    private Counter connectTimeoutCounter = new Counter("connectTimeout");
+    private Counter requestTimeoutCounter = new Counter("requestTimeout");
 
     private ExecutorService executor = null;
 
     private int threadNumber = 10;
 
-    private int qps = 10;
+    private int qps = 100;
 
     private int docPerReq = 5;
 
@@ -66,19 +74,25 @@ public class Benchmark extends ClientBase {
         @Override
         public void run() {
             initialRequest();
+            logger.info("initial thread stop.");
         }
     });
 
-    private Thread dumpTread = new Thread(new Runnable() {
+    private Thread dumpThread = new Thread(new Runnable() {
         @Override
         public void run() {
             dumpInfo();
+            logger.info("dump thread stop.");
         }
     });
 
     private int sequence = 0;
 
     private int mode = 0;
+
+    private long queueLength() {
+        return initialCounter.getCurrentValue() - launchCounter.getCurrentValue();
+    }
 
     public ArrayList<TestRequestItem> genRandomRequest() {
         ArrayList<TestRequestItem> ret = new ArrayList<TestRequestItem>(docPerReq);
@@ -188,20 +202,26 @@ public class Benchmark extends ClientBase {
         long sleep;
 
         while (running) {
-            start = System.currentTimeMillis();
+            long _queueLength = queueLength();
 
-            for (int i = 0; i < qps; i++) {
-                ArrayList<TestRequestItem> req = getRequest();
+            if (_queueLength >= qps * 6) {
+                sleep = 1000;
+            } else {
+                start = System.currentTimeMillis();
 
-                executor.execute(new TestTask(req));
-                initialCounter.increment();
+                for (int i = 0; i < qps; i++) {
+                    ArrayList<TestRequestItem> req = getRequest();
+
+                    executor.execute(new TestTask(req));
+                    initialCounter.increment();
+                }
+
+                end = System.currentTimeMillis();
+
+                used = end - start;
+
+                sleep = 1000 - used;
             }
-
-            end = System.currentTimeMillis();
-
-            used = end - start;
-
-            sleep = 1000 - used;
 
             if (sleep > 0) {
                 try {
@@ -210,7 +230,7 @@ public class Benchmark extends ClientBase {
 
                 }
             } else if (sleep < 0) {
-                logger.error("cant initial request " + qps + " per second.");
+                logger.error("cant initial request " + qps + " /second.");
             }
         }
     }
@@ -231,48 +251,67 @@ public class Benchmark extends ClientBase {
 
             diff = end - start;
 
-            if (result.getDocs().isEmpty()) {
+            if (result == null || result.getDocs().isEmpty()) {
                 emptyCounter.increment(diff);
             }
 
             successCounter.increment(diff);
+        } catch (ConnectTimeout e) {
+            connectTimeoutCounter.increment();
+        } catch (RequestTimeout e) {
+            requestTimeoutCounter.increment();
+        } catch (ServiceException e) {
+            end = System.currentTimeMillis();
+            diff = end - start;
 
+            failedCounter.increment(diff);
+
+            logger.error("Exception:", e);
+        } catch (MalformedURLException e) {
+            end = System.currentTimeMillis();
+            diff = end - start;
+
+            failedCounter.increment(diff);
+
+            logger.error("Exception:", e);
         } catch (Exception e) {
             end = System.currentTimeMillis();
             diff = end - start;
 
-            failedCounter.increment();
+            failedCounter.increment(diff);
+
+            logger.error("Exception:", e);
         }
     }
 
     void dumpInfo() {
         while (running) {
+            try {
+                Thread.sleep(dumpInterval);
+            } catch (InterruptedException e) {
+                continue;
+            }
+
             List<String> dumpContent = CounterManager.getInstance().dump();
 
-            for (String l : dumpContent) {
+            long _queueLength = queueLength();
 
-                // System.out.println(l);
+            if (_queueLength > 0) {
+                logger.info("" + _queueLength + " request queued.");
+            }
+
+            for (String l : dumpContent) {
                 logger.info(l);
             }
 
             Date now = new Date();
 
             if (now.after(stopTime)) {
-                running = false;
-
-                executor.shutdown();
-
                 break;
-            }
-
-            try {
-                Thread.sleep(dumpInterval);
-            } catch (InterruptedException e) {
-
             }
         }
 
-        logger.info("press test stop.");
+        stop();
     }
 
     protected D6ResponseMessageFactory createFactory() {
@@ -289,7 +328,7 @@ public class Benchmark extends ClientBase {
         options.addOption(OptionBuilder.withLongOpt("md5Lite").withDescription("md5Lite list. split by ','").hasArg()
                 .withArgName("md5Lite").create('m'));
 
-        options.addOption(OptionBuilder.withLongOpt("thread").withDescription("max thread. default:10").hasArg()
+        options.addOption(OptionBuilder.withLongOpt("thread").withDescription("max thread. default:100").hasArg()
                 .withArgName("thread").create('t'));
 
         options.addOption(OptionBuilder.withLongOpt("qps").withDescription("request per secode. default:10").hasArg()
@@ -387,6 +426,7 @@ public class Benchmark extends ClientBase {
         logger.info("size of request doc:" + requestInfo.size());
 
         //
+        service.setMaxRetryTimes(1);
         service.open(super.createFactory());
 
         // set stop time
@@ -400,11 +440,11 @@ public class Benchmark extends ClientBase {
         //
         executor = Executors.newFixedThreadPool(threadNumber);
 
-        // start intial thread
+        // start initial thread
         initialThread.start();
 
         // start dump thread
-        dumpTread.start();
+        dumpThread.start();
     }
 
     protected void stop() {
@@ -412,7 +452,12 @@ public class Benchmark extends ClientBase {
 
         logger.info("press test stop.");
 
-        executor.shutdown();
+        dumpThread.interrupt();
+        initialThread.interrupt();
+
+        executor.shutdownNow();
+
+        service.close();
     }
 
     public static void main(String[] args) {

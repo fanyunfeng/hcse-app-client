@@ -25,6 +25,7 @@ import com.hcse.d6.protocol.message.D6RequestMessageV3;
 import com.hcse.d6.protocol.message.D6ResponseMessage;
 import com.hcse.d6.service.DataServiceImpl;
 import com.hcse.protocol.util.packet.BasePacket;
+import com.hcse.service.ServiceException;
 import com.hcse.service.common.ServiceDiscoveryService;
 
 public abstract class ClientBase {
@@ -37,7 +38,7 @@ public abstract class ClientBase {
     protected DataServiceImpl service = new DataServiceImpl();
     protected int defalutMid = 1;
     protected final String searchStr = "[S](([TX:TP:测试]))&([CL:CC:080])";
-    protected boolean running = true;
+    protected volatile boolean running = true;
 
     public ClientBase() {
         ServiceDiscoveryService serviceDiscovery = new ServiceDiscoveryService();
@@ -151,7 +152,7 @@ public abstract class ClientBase {
         }
     }
 
-    protected D6ResponseMessage requestV1(TestRequest req) throws MalformedURLException {
+    protected D6ResponseMessage requestV1(TestRequest req) throws MalformedURLException, ServiceException {
         D6RequestMessage request = new D6RequestMessageV1(searchStr);
 
         request.setDocsCount(req.size());
@@ -169,7 +170,7 @@ public abstract class ClientBase {
         return service.search(request, createFactory());
     }
 
-    protected D6ResponseMessage requestV2(TestRequest req) throws MalformedURLException {
+    protected D6ResponseMessage requestV2(TestRequest req) throws MalformedURLException, ServiceException {
         D6RequestMessage request = new D6RequestMessageV2(searchStr);
 
         request.setDocsCount(req.size());
@@ -187,7 +188,7 @@ public abstract class ClientBase {
         return service.search(request, createFactory());
     }
 
-    protected D6ResponseMessage requestV3(TestRequest req) throws MalformedURLException {
+    protected D6ResponseMessage requestV3(TestRequest req) throws MalformedURLException, ServiceException {
         D6RequestMessage request = new D6RequestMessageV3(searchStr);
 
         request.setDocsCount(req.size());
@@ -222,7 +223,7 @@ public abstract class ClientBase {
         return response;
     }
 
-    protected D6ResponseMessage request(TestRequest req) throws MalformedURLException {
+    protected D6ResponseMessage request(TestRequest req) throws MalformedURLException, ServiceException {
         switch (version) {
         case 1:
             return requestV1(req);
@@ -235,7 +236,7 @@ public abstract class ClientBase {
         return null;
     }
 
-    protected D6ResponseMessage request(int mid, String md5Lite) throws MalformedURLException {
+    protected D6ResponseMessage request(int mid, String md5Lite) throws MalformedURLException, ServiceException {
         TestRequest req = TestRequest.createSimple(mid, md5Lite);
         return request(req);
     }

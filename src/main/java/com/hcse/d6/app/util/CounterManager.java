@@ -1,6 +1,5 @@
 package com.hcse.d6.app.util;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,14 +7,12 @@ public class CounterManager {
     private long start = System.currentTimeMillis();
     private long second = 0;
 
-    DecimalFormat df = new DecimalFormat("#.0000");
-
     private String toString(double v) {
         if (Double.isNaN(v)) {
             return "0";
         }
 
-        return df.format(v);
+        return String.format("%.3f", v);
     }
 
     private ArrayList<Counter> counters = new ArrayList<Counter>();
@@ -39,7 +36,7 @@ public class CounterManager {
     public String dumpCurrent() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("current");
+        sb.append("total");
         for (Counter c : counters) {
             sb.append(" ");
             sb.append(c.getName());
@@ -70,11 +67,6 @@ public class CounterManager {
         StringBuilder sb = new StringBuilder();
 
         sb.append("perSecond[c/s]");
-
-        if (second <= 0) {
-            sb.append(" second is zero.");
-            return sb.toString();
-        }
 
         for (Counter c : counters) {
             sb.append(" ");
@@ -112,11 +104,6 @@ public class CounterManager {
         StringBuilder sb = new StringBuilder();
 
         sb.append("speed[ms/c]");
-
-        if (second <= 0) {
-            sb.append(" second is zero.");
-            return sb.toString();
-        }
 
         for (Counter c : counters) {
             if (c instanceof CounterTimer) {
