@@ -1,4 +1,4 @@
-package com.hcse.d6.app;
+package com.hcse.app.d6;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -18,11 +18,11 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.log4j.Logger;
 
-import com.hcse.d6.app.util.Counter;
-import com.hcse.d6.app.util.CounterManager;
-import com.hcse.d6.app.util.CounterTimer;
-import com.hcse.d6.protocol.codec.D6ClientCodecFactory;
-import com.hcse.d6.protocol.message.D6ResponseMessage;
+import com.hcse.app.util.Counter;
+import com.hcse.app.util.CounterManager;
+import com.hcse.app.util.CounterTimer;
+import com.hcse.protocol.d6.codec.D6ClientCodecFactory;
+import com.hcse.protocol.d6.message.D6ResponseMessage;
 import com.hcse.service.ConnectTimeout;
 import com.hcse.service.RequestTimeout;
 import com.hcse.service.ServiceException;

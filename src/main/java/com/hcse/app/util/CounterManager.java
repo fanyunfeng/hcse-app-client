@@ -1,4 +1,4 @@
-package com.hcse.d6.app.util;
+package com.hcse.app.util;
 
 import java.util.ArrayList;
 import java.util.List;

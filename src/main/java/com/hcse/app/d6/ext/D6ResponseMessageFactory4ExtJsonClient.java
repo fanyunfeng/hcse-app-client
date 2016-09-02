@@ -1,7 +1,7 @@
-package com.hcse.d6.app.ext;
+package com.hcse.app.d6.ext;
 
-import com.hcse.d6.protocol.factory.D6ResponseMessageFactory;
-import com.hcse.d6.protocol.message.D6ResponseMessageClientDoc;
+import com.hcse.protocol.d6.factory.D6ResponseMessageFactory;
+import com.hcse.protocol.d6.message.D6ResponseMessageClientDoc;
 import com.hcse.protocol.util.packet.FieldsMap;
 
 public class D6ResponseMessageFactory4ExtJsonClient extends D6ResponseMessageFactory {

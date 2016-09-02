@@ -1,4 +1,4 @@
-package com.hcse.d6.app;
+package com.hcse.app.d6;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,7 +20,7 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.util.DefaultPrettyPrinter;
 
-import com.hcse.d6.protocol.message.D6ResponseMessage;
+import com.hcse.protocol.d6.message.D6ResponseMessage;
 import com.hcse.protocol.util.packet.BaseDoc;
 import com.hcse.protocol.util.packet.BasePacket;
 
@@ -42,7 +42,7 @@ public class Client extends ClientBase {
 
     protected String charset = "utf8";
 
-    class MyPrettyPrinter extends DefaultPrettyPrinter {
+    static class MyPrettyPrinter extends DefaultPrettyPrinter {
         public MyPrettyPrinter() {
             this._arrayIndenter = new Lf2SpacesIndenter();
         }

@@ -1,12 +1,15 @@
-package com.hcse.d6.app;
+package com.hcse.app;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 
-import com.hcse.d6.app.ext.D6ResponseMessageFactory4ExtClient;
-import com.hcse.d6.app.ext.D6ResponseMessageFactory4ExtJsonClient;
-import com.hcse.d6.app.ext.D6ResponseMessageFactory4ExtJsonLogistic;
-import com.hcse.d6.protocol.codec.D6ClientCodecFactory;
+import com.hcse.app.d6.Client;
+import com.hcse.app.d6.ExitExeption;
+import com.hcse.app.d6.ext.D6ResponseMessageFactory4ExtClient;
+import com.hcse.app.d6.ext.D6ResponseMessageFactory4ExtJsonClient;
+import com.hcse.app.d6.ext.D6ResponseMessageFactory4ExtJsonLogistic;
+import com.hcse.protocol.d6.codec.D6ClientCodecFactory;
+
 
 public class ExtClient extends Client {
     private String[] extFieldName;

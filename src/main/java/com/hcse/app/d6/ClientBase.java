@@ -1,4 +1,4 @@
-package com.hcse.d6.app;
+package com.hcse.app.d6;
 
 import java.net.MalformedURLException;
 import java.util.List;
@@ -13,20 +13,20 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.log4j.Logger;
 
-import com.hcse.d6.protocol.codec.D6ClientCodecFactory;
-import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4Client;
-import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4JsonClient;
-import com.hcse.d6.protocol.factory.D6ResponseMessageFactory4Logistic;
-import com.hcse.d6.protocol.message.D6RequestMessage;
-import com.hcse.d6.protocol.message.D6RequestMessageDoc;
-import com.hcse.d6.protocol.message.D6RequestMessageV1;
-import com.hcse.d6.protocol.message.D6RequestMessageV2;
-import com.hcse.d6.protocol.message.D6RequestMessageV3;
-import com.hcse.d6.protocol.message.D6ResponseMessage;
-import com.hcse.d6.service.DataServiceImpl;
+import com.hcse.protocol.d6.codec.D6ClientCodecFactory;
+import com.hcse.protocol.d6.factory.D6ResponseMessageFactory4Client;
+import com.hcse.protocol.d6.factory.D6ResponseMessageFactory4JsonClient;
+import com.hcse.protocol.d6.factory.D6ResponseMessageFactory4Logistic;
+import com.hcse.protocol.d6.message.D6RequestMessage;
+import com.hcse.protocol.d6.message.D6RequestMessageDoc;
+import com.hcse.protocol.d6.message.D6RequestMessageV1;
+import com.hcse.protocol.d6.message.D6RequestMessageV2;
+import com.hcse.protocol.d6.message.D6RequestMessageV3;
+import com.hcse.protocol.d6.message.D6ResponseMessage;
 import com.hcse.protocol.util.packet.BasePacket;
 import com.hcse.service.ServiceException;
 import com.hcse.service.common.ServiceDiscoveryService;
+import com.hcse.service.d6.DataServiceImpl;
 
 public abstract class ClientBase {
     protected final Logger logger = Logger.getLogger(ClientBase.class);

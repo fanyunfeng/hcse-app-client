@@ -1,4 +1,4 @@
-package com.hcse.d6.app;
+package com.hcse.app.d6;
 
 public class ExitExeption extends Exception {
 
