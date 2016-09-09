@@ -3,7 +3,7 @@ package com.hcse.app.d2;
 import java.util.List;
 import java.util.Map;
 
-import com.hcse.service.BaseRequest;
+import com.hcse.protocol.BaseRequest;
 import com.hcse.util.sstring.RequestFactory;
 import com.hcse.util.sstring.SearchStringParser;
 

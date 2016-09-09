@@ -1,7 +1,5 @@
-package com.hcse.app.d2p;
+package com.hcse.app;
 
-import com.hcse.app.BaseClientConf;
-import com.hcse.app.ExitException;
 
 public class BenchmarkConf extends BaseClientConf {
 

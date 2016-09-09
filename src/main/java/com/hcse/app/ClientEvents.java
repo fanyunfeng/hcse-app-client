@@ -1,4 +1,4 @@
-package com.hcse.app.d2;
+package com.hcse.app;
 
 public interface ClientEvents {
     void onLanch();

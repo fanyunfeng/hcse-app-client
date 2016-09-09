@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.hcse.protocol.BaseRequest;
 import com.hcse.protocol.d2.message.D2RequestMessage;
-import com.hcse.service.BaseRequest;
 import com.hcse.util.Md5Lite;
 import com.hcse.util.sstring.RequestFactory;
 import com.hcse.util.sstring.SearchStringParser;

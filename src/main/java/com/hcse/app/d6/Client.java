@@ -21,9 +21,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.util.DefaultPrettyPrinter;
 
 import com.hcse.app.ExitException;
+import com.hcse.protocol.BasePacket;
 import com.hcse.protocol.d6.message.D6ResponseMessage;
 import com.hcse.protocol.util.packet.BaseDoc;
-import com.hcse.protocol.util.packet.BasePacket;
 
 enum DocContentFormat {
     array, object

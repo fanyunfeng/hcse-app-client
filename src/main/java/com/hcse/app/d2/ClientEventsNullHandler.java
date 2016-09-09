@@ -1,5 +1,7 @@
 package com.hcse.app.d2;
 
+import com.hcse.app.ClientEvents;
+
 public class ClientEventsNullHandler implements ClientEvents {
 
     @Override

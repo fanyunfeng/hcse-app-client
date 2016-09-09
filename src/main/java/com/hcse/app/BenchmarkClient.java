@@ -1,4 +1,4 @@
-package com.hcse.app.d2p;
+package com.hcse.app;
 
 import java.util.Date;
 import java.util.List;
@@ -6,16 +6,17 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
+import org.apache.mina.filter.codec.ProtocolCodecFactory;
 
-import com.hcse.app.BaseClientConf;
-import com.hcse.app.d2.ClientEvents;
-import com.hcse.app.d2.D2Client;
 import com.hcse.app.util.Counter;
 import com.hcse.app.util.CounterManager;
 import com.hcse.app.util.CounterTimer;
-import com.hcse.protocol.d2.message.D2RequestMessage;
+import com.hcse.protocol.BaseRequest;
+import com.hcse.protocol.BaseResponse;
 
-public class BenchmarkClient extends D2Client {
+public abstract class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage extends BaseResponse, ResponseCodecFactory extends ProtocolCodecFactory>
+        extends CommonClient<RequestMessage, ResponseMessage, ResponseCodecFactory> {
+
     protected final Logger logger = Logger.getLogger(BenchmarkClient.class);
 
     BenchmarkClient() {
@@ -145,9 +146,9 @@ public class BenchmarkClient extends D2Client {
     });
 
     class TestTask implements Runnable {
-        D2RequestMessage req;
+        RequestMessage req;
 
-        public TestTask(D2RequestMessage req) {
+        public TestTask(RequestMessage req) {
             this.req = req;
         }
 
@@ -175,7 +176,7 @@ public class BenchmarkClient extends D2Client {
         while (running.get()) {
             long _queueLength = queueLength();
 
-            if (_queueLength >= qps * 6) {
+            if (_queueLength >= qps * 4) {
                 sleep = 1000;
             } else {
                 start = System.currentTimeMillis();
@@ -204,5 +205,4 @@ public class BenchmarkClient extends D2Client {
             }
         }
     }
-
 }

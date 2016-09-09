@@ -14,6 +14,7 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.log4j.Logger;
 
 import com.hcse.app.ExitException;
+import com.hcse.protocol.BasePacket;
 import com.hcse.protocol.d6.codec.D6ClientCodecFactory;
 import com.hcse.protocol.d6.factory.D6ResponseMessageFactory4Client;
 import com.hcse.protocol.d6.factory.D6ResponseMessageFactory4JsonClient;
@@ -24,7 +25,6 @@ import com.hcse.protocol.d6.message.D6RequestMessageV1;
 import com.hcse.protocol.d6.message.D6RequestMessageV2;
 import com.hcse.protocol.d6.message.D6RequestMessageV3;
 import com.hcse.protocol.d6.message.D6ResponseMessage;
-import com.hcse.protocol.util.packet.BasePacket;
 import com.hcse.service.ServiceException;
 import com.hcse.service.common.ServiceDiscoveryService;
 import com.hcse.service.d6.DataServiceImpl;

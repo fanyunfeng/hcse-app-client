@@ -193,4 +193,6 @@ public class BaseClientConf {
     public DocContentFormat fieldFormat;
 
     public int[] mld;
+
+    public boolean silent = false;
 }
