@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.hcse.protocol.d2.message.D2RequestMessage;
+import com.hcse.service.BaseRequest;
+import com.hcse.util.Md5Lite;
 import com.hcse.util.sstring.RequestFactory;
 import com.hcse.util.sstring.SearchStringParser;
 
-public class SingleRequestLoader extends RequestLoader {
+public class SingleRequestLoader extends RequestLoader<BaseRequest> {
     private String line;
 
     public SingleRequestLoader(String line) {
@@ -16,12 +18,17 @@ public class SingleRequestLoader extends RequestLoader {
     }
 
     @Override
-    List<D2RequestMessage> LoadRequest(Map<String, String> shortNameMap, RequestFactory factory) {
+    public List<? extends BaseRequest> loadRequest(Map<String, String> shortNameMap, RequestFactory<BaseRequest> factory) {
         ArrayList<D2RequestMessage> list = new ArrayList<D2RequestMessage>(1);
 
-        Object o = SearchStringParser.buildMessage(line, shortNameMap);
+        Map<String, String> map = SearchStringParser.parse(line, shortNameMap);
+
+        long tag = Md5Lite.digestLong(line);
+
+        BaseRequest o = SearchStringParser.buildMessage(factory.create(), map);
 
         if (o != null) {
+            o.setTag(tag);
             list.add((D2RequestMessage) o);
         }
 

@@ -2,15 +2,13 @@ package com.hcse.app;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
 import org.apache.log4j.Logger;
-
-import com.hcse.app.d6.ExitExeption;
 
 enum DocContentFormat {
     array, object
@@ -19,8 +17,8 @@ enum DocContentFormat {
 public class BaseClientConf {
     protected final static Logger logger = Logger.getLogger(BaseClientConf.class);
 
-    private Options options = new Options();
-    private CommandLine commandLine;
+    protected Options options = new Options();
+    protected CommandLine commandLine;
 
     protected ExtClientConf extConfig;
 
@@ -33,7 +31,7 @@ public class BaseClientConf {
     }
 
     public void parseArgs(String[] args) throws ParseException {
-        CommandLineParser parser = new PosixParser();
+        CommandLineParser parser = new DefaultParser();
 
         commandLine = parser.parse(options, args);
     }
@@ -41,6 +39,7 @@ public class BaseClientConf {
     public void init() {
         options.addOption(new Option("h", "help", false, "print this message"));
 
+        // arguments
         options.addOption(OptionBuilder.withLongOpt("url").withDescription("url of service: data://127.0.0.1:3000")
                 .hasArg().withArgName("url").create('u'));
 
@@ -53,6 +52,13 @@ public class BaseClientConf {
         options.addOption(OptionBuilder.withLongOpt("directory").withDescription("directory to save result").hasArg()
                 .withArgName("directory").create('d'));
 
+        options.addOption(OptionBuilder.withLongOpt("charset").withDescription("charset to encoding JSON.").hasArg()
+                .withArgName("charset").create());
+
+        options.addOption(OptionBuilder.withLongOpt("mld").withDescription("save result by MLD mode.").hasArg()
+                .withArgName("mld").create());
+
+        // options
         options.addOption(OptionBuilder.withLongOpt("pretty").withDescription("print pretty format. true/false")
                 .hasArg().withArgName("pretty").create());
 
@@ -62,30 +68,21 @@ public class BaseClientConf {
         options.addOption(OptionBuilder.withLongOpt("object").withDescription("print document field by json array.")
                 .withArgName("object").create());
 
-        options.addOption(OptionBuilder.withLongOpt("charset").withDescription("charset to encoding JSON.")
-                .withArgName("charset").create());
-
-        options.addOption(OptionBuilder.withLongOpt("mld").withDescription("save result by MLD mode.")
-                .withArgName("mld").create());
-
         if (extConfig != null) {
             extConfig.init();
         }
     }
 
-    public void printHelp() {
+    public void printHelp(String name) {
         HelpFormatter hf = new HelpFormatter();
         hf.setWidth(110);
 
-        hf.printHelp("d6.client", options, false);
-
+        hf.printHelp(name, options, false);
     }
 
-    public void parse() throws ExitExeption {
+    public void parse() throws ExitException {
         if (commandLine.hasOption("help")) {
-            printHelp();
-
-            throw new ExitExeption();
+            throw new ShowHelpException();
         }
 
         if (commandLine.hasOption("file")) {
@@ -154,13 +151,21 @@ public class BaseClientConf {
 
             try {
                 if (value.length() > 0) {
-                    int ivalues[] = new int[values.length];
+                    int ivalues[] = null;
+
+                    if (value.endsWith(":")) {
+                        ivalues = new int[values.length + 1];
+                        ivalues[values.length] = -1;
+                    } else {
+                        ivalues = new int[values.length];
+                    }
 
                     for (int i = 0; i < values.length; i++) {
                         ivalues[i] = Integer.parseInt(values[i]);
                     }
 
                     mld = ivalues;
+
                 }
             } catch (NumberFormatException e) {
 

@@ -20,6 +20,7 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.util.DefaultPrettyPrinter;
 
+import com.hcse.app.ExitException;
 import com.hcse.protocol.d6.message.D6ResponseMessage;
 import com.hcse.protocol.util.packet.BaseDoc;
 import com.hcse.protocol.util.packet.BasePacket;
@@ -222,7 +223,7 @@ public class Client extends ClientBase {
     }
 
     @SuppressWarnings("static-access")
-    protected void init() throws ExitExeption {
+    protected void init() throws ExitException {
         super.init();
 
         options.addOption(OptionBuilder.withLongOpt("file").withDescription("md5 file name.").hasArg()
@@ -247,7 +248,7 @@ public class Client extends ClientBase {
                 .withArgName("charset").create());
     }
 
-    protected void parseArgs(CommandLine cmd) throws ExitExeption {
+    protected void parseArgs(CommandLine cmd) throws ExitException {
         super.parseArgs(cmd);
 
         if (cmd.hasOption("directory")) {

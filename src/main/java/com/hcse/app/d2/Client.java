@@ -3,13 +3,17 @@ package com.hcse.app.d2;
 import com.hcse.app.BaseClient;
 import com.hcse.app.BaseClientConf;
 import com.hcse.app.BaseClientContext;
-import com.hcse.app.d6.ExitExeption;
+import com.hcse.app.ExitException;
+import com.hcse.protocol.d2.codec.D2ClientCodecFactory;
+import com.hcse.protocol.d2.factory.D2ResponseMessageFactory;
+import com.hcse.protocol.d2.message.D2RequestMessage;
 import com.hcse.protocol.dump.ConsoleOutputStreamBuilder;
 import com.hcse.protocol.dump.D2ResponseDump;
 import com.hcse.protocol.dump.FileOutputStreamBuilder;
 import com.hcse.protocol.dump.MLDFileOutputStreamBuilder;
 import com.hcse.protocol.dump.OutputStreamBuilder;
 import com.hcse.protocol.handler.ConstantWeight;
+import com.hcse.util.sstring.RequestFactory;
 
 public class Client extends BaseClient {
 
@@ -24,7 +28,7 @@ public class Client extends BaseClient {
     }
 
     @Override
-    public void init(BaseClientConf conf, BaseClientContext ctx) throws ExitExeption {
+    public void init(BaseClientConf conf, BaseClientContext ctx) throws ExitException {
         super.init(conf, ctx);
 
         if (conf.file != null) {
@@ -33,29 +37,57 @@ public class Client extends BaseClient {
     }
 
     @Override
-    public void parseArg(BaseClientConf conf, BaseClientContext ctx) throws ExitExeption {
+    public void parseArg(BaseClientConf conf, BaseClientContext ctx) throws ExitException {
         super.parseArg(conf, ctx);
     }
 
-    protected void createRequestLoader(BaseClientConf conf, D2Client client) throws ExitExeption {
+    protected void createRequestLoader(BaseClientConf conf, D2Client client) throws ExitException {
         if (conf.file != null) {
-            client.setRequestLoader(new FileResquestLoader(conf.file));
+            client.setRequestLoader(new FileRequestLoader(conf.file));
         } else if (conf.searchString != null) {
             client.setRequestLoader(new SingleRequestLoader(conf.searchString));
         } else {
-            throw new ExitExeption();
+            throw new ExitException();
         }
     }
 
-    protected void createOutputStreamBuilder(BaseClientConf conf, D2Client client) throws ExitExeption {
+    protected void createCodecFactory(BaseClientConf conf, D2Client client) throws ExitException {
+        D2ClientCodecFactory factory = new D2ClientCodecFactory(new D2ResponseMessageFactory());
+
+        client.setClientCodecFactory(factory);
+    }
+
+    protected void createRequestFactory(BaseClientConf conf, D2Client client) throws ExitException {
+        final D2RequestMessage request = new D2RequestMessage();
+
+        if (conf.url != null) {
+            request.setServiceAddress(conf.url);
+        }
+
+        RequestFactory requestFactory = new RequestFactory() {
+
+            @Override
+            public D2RequestMessage create() {
+                try {
+                    return (D2RequestMessage) request.clone();
+                } catch (CloneNotSupportedException e) {
+                    throw new Error(e);
+                }
+            }
+
+        };
+        client.setRequestFactory(requestFactory);
+    }
+
+    protected void createOutputStreamBuilder(BaseClientConf conf, D2Client client) throws ExitException {
         OutputStreamBuilder outputStreamBuilder;
         if (conf.mld != null) {
             String dir = conf.dir;
             if (dir == null) {
                 dir = ".";
             }
-            outputStreamBuilder = new MLDFileOutputStreamBuilder(conf.dir, conf.mld, "json");
-        } else if (conf.dir == null) {
+            outputStreamBuilder = new MLDFileOutputStreamBuilder(dir, conf.mld, "json");
+        } else if (conf.dir != null) {
             outputStreamBuilder = new FileOutputStreamBuilder(conf.dir, "json");
         } else {
             outputStreamBuilder = new ConsoleOutputStreamBuilder();
@@ -64,7 +96,7 @@ public class Client extends BaseClient {
         client.setOutputStreamBuilder(outputStreamBuilder);
     }
 
-    protected void createResponseDump(BaseClientConf conf, D2Client client) throws ExitExeption {
+    protected void createResponseDump(BaseClientConf conf, D2Client client) throws ExitException {
         D2ResponseDump dumper = new D2ResponseDump();
 
         dumper.setCharset(conf.charset);
@@ -73,25 +105,30 @@ public class Client extends BaseClient {
         client.setDumper(dumper);
     }
 
-    protected void createRequestQueue(BaseClientConf conf, D2Client client) throws ExitExeption {
+    protected void createRequestQueue(BaseClientConf conf, final D2Client client) throws ExitException {
         RequestQueue queue = new SequenceRequestQueue();
 
         client.setRequestQueue(queue);
     }
 
-    protected void addDocHandler(BaseClientConf conf, D2Client client) throws ExitExeption {
+    protected void addDocHandler(BaseClientConf conf, D2Client client) throws ExitException {
         ConstantWeight handler = new ConstantWeight();
 
         client.addDocHandler(handler);
     }
 
     @Override
-    public void prepare(BaseClientConf conf, BaseClientContext ctx) throws ExitExeption {
+    public void prepare(BaseClientConf conf, BaseClientContext ctx) throws ExitException {
         super.prepare(conf, ctx);
 
         D2Client client = (D2Client) ctx;
 
+        //
+        createRequestFactory(conf, client);
+
         createRequestLoader(conf, client);
+
+        createCodecFactory(conf, client);
 
         createOutputStreamBuilder(conf, client);
 
@@ -100,9 +137,13 @@ public class Client extends BaseClient {
         createRequestQueue(conf, client);
 
         addDocHandler(conf, client);
+
+        client.init();
     }
 
-    public void run(BaseClientConf conf, BaseClientContext ctx) throws ExitExeption {
+    public void run(BaseClientConf conf, BaseClientContext ctx) throws ExitException {
         ctx.run(conf);
+
+        ctx.stop();
     }
 }

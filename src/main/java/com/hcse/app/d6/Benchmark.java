@@ -18,6 +18,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.log4j.Logger;
 
+import com.hcse.app.ExitException;
 import com.hcse.app.util.Counter;
 import com.hcse.app.util.CounterManager;
 import com.hcse.app.util.CounterTimer;
@@ -319,7 +320,7 @@ public class Benchmark extends ClientBase {
     }
 
     @SuppressWarnings("static-access")
-    protected void init() throws ExitExeption {
+    protected void init() throws ExitException {
         super.init();
 
         options.addOption(OptionBuilder.withLongOpt("file").withDescription("md5 file name.").hasArg()
@@ -351,7 +352,7 @@ public class Benchmark extends ClientBase {
                 .withArgName("random").create());
     }
 
-    protected void parseArgs(CommandLine cmd) throws ExitExeption {
+    protected void parseArgs(CommandLine cmd) throws ExitException {
         super.parseArgs(cmd);
 
         if (cmd.hasOption("thread")) {
@@ -420,13 +421,13 @@ public class Benchmark extends ClientBase {
     }
 
     @Override
-    protected void run(CommandLine cmd) throws ExitExeption {
+    protected void run(CommandLine cmd) throws ExitException {
         //
         logger.info("press test start.");
         logger.info("size of request doc:" + requestInfo.size());
 
         //
-        service.setMaxRetryTimes(1);
+        //service.setMaxRetryTimes(1);
         service.open(super.createCodecFactory());
 
         // set stop time

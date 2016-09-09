@@ -4,7 +4,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 
 import com.hcse.app.d6.Client;
-import com.hcse.app.d6.ExitExeption;
 import com.hcse.app.d6.ext.D6ResponseMessageFactory4ExtClient;
 import com.hcse.app.d6.ext.D6ResponseMessageFactory4ExtJsonClient;
 import com.hcse.app.d6.ext.D6ResponseMessageFactory4ExtJsonLogistic;
@@ -44,14 +43,14 @@ public class ExtClient extends Client {
     }
 
     @SuppressWarnings("static-access")
-    protected void init() throws ExitExeption {
+    protected void init() throws ExitException {
         super.init();
 
         options.addOption(OptionBuilder.withLongOpt("--extfields").withDescription("extend fields name:XA,XB,XC,XD")
                 .hasArg().withArgName("extfields").create('e'));
     }
 
-    protected void parseArgs(CommandLine cmd) throws ExitExeption {
+    protected void parseArgs(CommandLine cmd) throws ExitException {
         super.parseArgs(cmd);
 
         String extfields = "XA,XB,XC,XD";

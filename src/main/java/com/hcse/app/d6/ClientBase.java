@@ -13,6 +13,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.log4j.Logger;
 
+import com.hcse.app.ExitException;
 import com.hcse.protocol.d6.codec.D6ClientCodecFactory;
 import com.hcse.protocol.d6.factory.D6ResponseMessageFactory4Client;
 import com.hcse.protocol.d6.factory.D6ResponseMessageFactory4JsonClient;
@@ -47,7 +48,7 @@ public abstract class ClientBase {
     }
 
     @SuppressWarnings("static-access")
-    protected void init() throws ExitExeption {
+    protected void init() throws ExitException {
         options.addOption(new Option("h", "help", false, "print this message"));
 
         options.addOption(OptionBuilder.withLongOpt("url").withDescription("url of service: data://127.0.0.1:3000")
@@ -66,13 +67,13 @@ public abstract class ClientBase {
                 .withArgName("verbose").create('v'));
     }
 
-    protected void parseArgs(CommandLine cmd) throws ExitExeption {
+    protected void parseArgs(CommandLine cmd) throws ExitException {
         if (cmd.hasOption('h')) {
             HelpFormatter hf = new HelpFormatter();
             hf.setWidth(110);
 
             hf.printHelp("d6.client", options, false);
-            throw new ExitExeption();
+            throw new ExitException();
         }
 
         if (cmd.hasOption("mid")) {
@@ -112,7 +113,7 @@ public abstract class ClientBase {
         running = false;
     }
 
-    protected abstract void run(CommandLine cmd) throws ExitExeption;
+    protected abstract void run(CommandLine cmd) throws ExitException;
 
     protected void entry(String[] args) {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -135,7 +136,7 @@ public abstract class ClientBase {
 
         } catch (ParseException e) {
             logger.error("ParseException", e);
-        } catch (ExitExeption e) {
+        } catch (ExitException e) {
 
         }
     }
