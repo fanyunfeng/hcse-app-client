@@ -2,11 +2,15 @@ package com.hcse.app.d2;
 
 import java.io.OutputStream;
 
-import com.hcse.app.BaseClient;
 import com.hcse.app.BaseClientConf;
-import com.hcse.app.BaseClientContext;
+import com.hcse.app.BaseClient;
+import com.hcse.app.BaseClientMgr;
 import com.hcse.app.CommonClient;
 import com.hcse.app.ExitException;
+import com.hcse.app.FileRequestLoader;
+import com.hcse.app.RequestQueue;
+import com.hcse.app.SequenceRequestQueue;
+import com.hcse.app.SingleRequestLoader;
 import com.hcse.protocol.d2.codec.D2ClientCodecFactory;
 import com.hcse.protocol.d2.factory.D2ResponseMessageFactory;
 import com.hcse.protocol.d2.message.D2RequestMessage;
@@ -16,9 +20,11 @@ import com.hcse.protocol.dump.FileOutputStreamBuilder;
 import com.hcse.protocol.dump.MLDFileOutputStreamBuilder;
 import com.hcse.protocol.dump.OutputStreamBuilder;
 import com.hcse.protocol.handler.ConstantWeight;
+import com.hcse.service.common.ServiceDiscoveryService;
+import com.hcse.service.d2.IndexServiceImpl;
 import com.hcse.util.sstring.RequestFactory;
 
-public class Client extends BaseClient {
+public class ClientMgr extends BaseClientMgr {
 
     @Override
     public BaseClientConf createConf() {
@@ -26,12 +32,12 @@ public class Client extends BaseClient {
     }
 
     @Override
-    public BaseClientContext createContext() {
+    public BaseClient createContext() {
         return new D2Client();
     }
 
     @Override
-    public void init(BaseClientConf conf, BaseClientContext ctx) throws ExitException {
+    public void init(BaseClientConf conf, BaseClient ctx) throws ExitException {
         super.init(conf, ctx);
 
         if (conf.file != null) {
@@ -40,10 +46,20 @@ public class Client extends BaseClient {
     }
 
     @Override
-    public void parseArg(BaseClientConf conf, BaseClientContext ctx) throws ExitException {
+    public void parseArg(BaseClientConf conf, BaseClient ctx) throws ExitException {
         super.parseArg(conf, ctx);
     }
+    
+    public void createService(BaseClientConf conf, CommonClient client) {
+        IndexServiceImpl srv = new IndexServiceImpl();
 
+        ServiceDiscoveryService serviceDiscovery = new ServiceDiscoveryService();
+
+        srv.setServiceDiscoveryService(serviceDiscovery);
+
+        client.setService(srv);
+    }
+    
     protected void createRequestLoader(BaseClientConf conf, CommonClient client) throws ExitException {
         if (conf.file != null) {
             client.setRequestLoader(new FileRequestLoader(conf.file));
@@ -136,7 +152,7 @@ public class Client extends BaseClient {
     }
 
     @Override
-    public void prepare(BaseClientConf conf, BaseClientContext ctx) throws ExitException {
+    public void prepare(BaseClientConf conf, BaseClient ctx) throws ExitException {
         super.prepare(conf, ctx);
 
         CommonClient client = (CommonClient) ctx;
@@ -159,7 +175,7 @@ public class Client extends BaseClient {
         client.init();
     }
 
-    public void run(BaseClientConf conf, BaseClientContext ctx) throws ExitException {
+    public void run(BaseClientConf conf, BaseClient ctx) throws ExitException {
         ctx.run(conf);
 
         ctx.stop();

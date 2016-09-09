@@ -12,9 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.log4j.Logger;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
 
-import com.hcse.app.d2.ClientEventsNullHandler;
-import com.hcse.app.d2.RequestLoader;
-import com.hcse.app.d2.RequestQueue;
 import com.hcse.protocol.BaseRequest;
 import com.hcse.protocol.BaseResponse;
 import com.hcse.protocol.BaseResponseDoc;
@@ -28,8 +25,8 @@ import com.hcse.service.ServiceException;
 import com.hcse.util.sstring.RequestFactory;
 import com.hcse.util.sstring.ShortNameMap;
 
-public abstract class CommonClient<RequestMessage extends BaseRequest, ResponseMessage extends BaseResponse, ResponseCodecFactory extends ProtocolCodecFactory>
-        extends BaseClientContext {
+public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage extends BaseResponse, ResponseCodecFactory extends ProtocolCodecFactory>
+        extends BaseClient {
 
     protected final Logger logger = Logger.getLogger(CommonClient.class);
 

@@ -14,12 +14,12 @@ import com.hcse.app.util.CounterTimer;
 import com.hcse.protocol.BaseRequest;
 import com.hcse.protocol.BaseResponse;
 
-public abstract class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage extends BaseResponse, ResponseCodecFactory extends ProtocolCodecFactory>
+public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage extends BaseResponse, ResponseCodecFactory extends ProtocolCodecFactory>
         extends CommonClient<RequestMessage, ResponseMessage, ResponseCodecFactory> {
 
     protected final Logger logger = Logger.getLogger(BenchmarkClient.class);
 
-    BenchmarkClient() {
+    public BenchmarkClient() {
         handler = new ClientEvents() {
             long start;
 

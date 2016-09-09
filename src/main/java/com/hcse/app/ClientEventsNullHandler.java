@@ -1,6 +1,5 @@
-package com.hcse.app.d2;
+package com.hcse.app;
 
-import com.hcse.app.ClientEvents;
 
 public class ClientEventsNullHandler implements ClientEvents {
 
