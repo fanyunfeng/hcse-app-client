@@ -153,17 +153,17 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
         return running.get();
     }
 
-    public void handleRequest(RequestMessage request) {
+    public void handleRequest(RunnerContext ctx, RequestMessage request) {
         ResponseMessage response = null;
 
         try {
             response = service.search(request, null);
 
             if (response != null) {
-                clientEventHandler.onLanch();
+                clientEventHandler.onLanch(ctx);
                 List<BaseResponseDoc> list = (List<BaseResponseDoc>) response.getDocs();
 
-                clientEventHandler.onCompleted(list == null || list.isEmpty());
+                clientEventHandler.onCompleted(ctx, list == null || list.isEmpty());
 
                 if (list != null) {
                     for (BaseResponseDoc doc : list) {
@@ -202,11 +202,11 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
 
             }
         } catch (ConnectTimeout e) {
-            clientEventHandler.onConnectTimeout();
+            clientEventHandler.onConnectTimeout(ctx);
         } catch (RequestTimeout e) {
-            clientEventHandler.onConnectTimeout();
+            clientEventHandler.onConnectTimeout(ctx);
         } catch (MalformedURLException | ServiceException e) {
-            clientEventHandler.onFailed();
+            clientEventHandler.onFailed(ctx);
             e.printStackTrace();
         }
     }

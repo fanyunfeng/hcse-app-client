@@ -21,39 +21,42 @@ public class BenchmarkClientRunner implements ClientRunner {
     private CommonClient client;
     private BenchmarkConf conf;
 
+    public static class BenchmarkClientContext extends RunnerContext {
+        public long start;
+    }
+
     public BenchmarkClientRunner() {
-        handler = new ClientEvents() {
-            long start;
+        handler = new ClientEvents<BenchmarkClientContext>() {
 
             @Override
-            public void onLanch() {
+            public void onLanch(BenchmarkClientContext ctx) {
                 launchCounter.increment();
-                start = System.currentTimeMillis();
+                ctx.start = System.nanoTime();
             }
 
             @Override
-            public void onCompleted(boolean empty) {
+            public void onCompleted(BenchmarkClientContext ctx, boolean empty) {
                 if (empty) {
                     emptyCounter.increment();
                 }
 
-                long now = System.currentTimeMillis();
-                successCounter.increment(now - start);
+                long now = System.nanoTime();
+                successCounter.increment(now - ctx.start);
             }
 
             @Override
-            public void onFailed() {
-                long now = System.currentTimeMillis();
-                failedCounter.increment(now - start);
+            public void onFailed(BenchmarkClientContext ctx) {
+                long now = System.nanoTime();
+                failedCounter.increment(now - ctx.start);
             }
 
             @Override
-            public void onConnectTimeout() {
+            public void onConnectTimeout(BenchmarkClientContext ctx) {
                 connectTimeoutCounter.increment();
             }
 
             @Override
-            public void onRequestTimeout() {
+            public void onRequestTimeout(BenchmarkClientContext ctx) {
                 requestTimeoutCounter.increment();
             }
         };
@@ -85,6 +88,16 @@ public class BenchmarkClientRunner implements ClientRunner {
 
         executor = Executors.newFixedThreadPool(conf.threadNumber);
         dumpThread.start();
+
+        initialThread.start();
+
+        while (client.isRunning()) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+
+            }
+        }
     }
 
     public void stop() {
@@ -145,15 +158,17 @@ public class BenchmarkClientRunner implements ClientRunner {
     });
 
     class TestTask implements Runnable {
+        RunnerContext ctx;
         BaseRequest req;
 
         public TestTask(BaseRequest req) {
+            ctx = new BenchmarkClientContext();
             this.req = req;
         }
 
         @Override
         public void run() {
-            client.handleRequest(req);
+            client.handleRequest(ctx, req);
         }
     }
 
@@ -177,7 +192,7 @@ public class BenchmarkClientRunner implements ClientRunner {
         while (client.isRunning()) {
             long _queueLength = queueLength();
 
-            if (_queueLength >= qps * 4) {
+            if (_queueLength >= qps * 1.5) {
                 sleep = 1000;
             } else {
                 start = System.currentTimeMillis();

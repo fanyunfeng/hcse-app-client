@@ -1,6 +1,5 @@
 package com.hcse.app;
 
-
 public class BenchmarkConf extends BaseClientConf {
 
     @Override

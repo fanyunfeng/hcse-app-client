@@ -4,7 +4,6 @@ import java.io.OutputStream;
 
 import com.hcse.app.BaseClientConf;
 import com.hcse.app.BaseClient;
-import com.hcse.app.BaseClientMgr;
 import com.hcse.app.CommonClient;
 import com.hcse.app.CommonClientRunner;
 import com.hcse.app.ExitException;
@@ -25,7 +24,7 @@ import com.hcse.service.common.ServiceDiscoveryService;
 import com.hcse.service.d2.IndexServiceImpl;
 import com.hcse.util.sstring.RequestFactory;
 
-public class ClientMgr extends BaseClientMgr {
+public class ClientMgr extends com.hcse.app.ClientMgr {
 
     @Override
     public BaseClientConf createConf() {
@@ -38,8 +37,8 @@ public class ClientMgr extends BaseClientMgr {
     }
 
     @Override
-    public void init(BaseClientConf conf, BaseClient ctx) throws ExitException {
-        super.init(conf, ctx);
+    public void init(BaseClientConf conf, BaseClient client) throws ExitException {
+        super.init(conf, client);
 
         if (conf.file != null) {
 
@@ -47,8 +46,8 @@ public class ClientMgr extends BaseClientMgr {
     }
 
     @Override
-    public void parseArg(BaseClientConf conf, BaseClient ctx) throws ExitException {
-        super.parseArg(conf, ctx);
+    public void parseArg(BaseClientConf conf, BaseClient client) throws ExitException {
+        super.parseArg(conf, client);
     }
 
     public void createService(BaseClientConf conf, CommonClient client) {
@@ -104,7 +103,7 @@ public class ClientMgr extends BaseClientMgr {
         if (conf.mld != null) {
             String dir = conf.dir;
             if (dir == null) {
-                dir = ".";
+                dir = "./result";
             }
             outputStreamBuilder = new MLDFileOutputStreamBuilder(dir, conf.mld, "json");
         } else if (conf.dir != null) {
@@ -152,19 +151,22 @@ public class ClientMgr extends BaseClientMgr {
         client.addDocHandler(handler);
     }
 
-    protected void createClientRunner(BaseClientConf conf, CommonClient ctx) throws ExitException {
+    protected void createClientRunner(BaseClientConf conf, CommonClient client) throws ExitException {
 
-        ctx.setClientRunner(new CommonClientRunner());
+        client.setClientRunner(new CommonClientRunner());
     }
 
     @Override
-    public void prepare(BaseClientConf conf, BaseClient ctx) throws ExitException {
-        super.prepare(conf, ctx);
+    public void prepare(BaseClientConf conf, BaseClient _client) throws ExitException {
+        super.prepare(conf, _client);
 
-        CommonClient client = (CommonClient) ctx;
+        CommonClient client = (CommonClient) _client;
 
-        //
+        createService(conf, client);
+
         createRequestFactory(conf, client);
+
+        createClientRunner(conf, client);
 
         createRequestLoader(conf, client);
 

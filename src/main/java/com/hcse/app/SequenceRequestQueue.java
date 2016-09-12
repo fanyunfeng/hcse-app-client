@@ -3,11 +3,11 @@ package com.hcse.app;
 import java.util.Iterator;
 import java.util.List;
 
-import com.hcse.protocol.d2.message.D2RequestMessage;
+import com.hcse.protocol.BaseRequest;
 
-public class SequenceRequestQueue<Request extends D2RequestMessage> extends RequestQueue<Request> {
-    Iterator<Request> iterator;
-    List<Request> list;
+public class SequenceRequestQueue<Request extends BaseRequest> extends RequestQueue<Request> {
+    protected Iterator<Request> iterator;
+    protected List<Request> list;
 
     public void setRequestList(List<Request> list) {
         this.list = list;

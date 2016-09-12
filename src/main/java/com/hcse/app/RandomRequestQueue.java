@@ -3,9 +3,9 @@ package com.hcse.app;
 import java.util.List;
 import java.util.Random;
 
-import com.hcse.protocol.d2.message.D2RequestMessage;
+import com.hcse.protocol.BaseRequest;
 
-public class RandomRequestQueue<Request extends D2RequestMessage> extends RequestQueue<Request> {
+public class RandomRequestQueue<Request extends BaseRequest> extends RequestQueue<Request> {
     private int size;
     private List<Request> list;
     private Random random = new Random(System.currentTimeMillis());

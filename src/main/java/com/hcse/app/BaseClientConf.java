@@ -4,8 +4,6 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
@@ -37,36 +35,21 @@ public class BaseClientConf {
     }
 
     public void init() {
-        options.addOption(new Option("h", "help", false, "print this message"));
+        options.addOption("h", "help", false, "print this message");
 
         // arguments
-        options.addOption(OptionBuilder.withLongOpt("url").withDescription("url of service: data://127.0.0.1:3000")
-                .hasArg().withArgName("url").create('u'));
+        options.addOption("u", "url", true, "url of service: data://127.0.0.1:3000");
+        options.addOption("f", "file", true, "search string file name.");
+        options.addOption("s", "searchString", true, "search string.");
+        options.addOption("d", "directory", true, "directory to save result");
 
-        options.addOption(OptionBuilder.withLongOpt("file").withDescription("search string file name.").hasArg()
-                .withArgName("file").create('f'));
-
-        options.addOption(OptionBuilder.withLongOpt("searchString").withDescription("search string.").hasArg()
-                .withArgName("searchString").create('s'));
-
-        options.addOption(OptionBuilder.withLongOpt("directory").withDescription("directory to save result").hasArg()
-                .withArgName("directory").create('d'));
-
-        options.addOption(OptionBuilder.withLongOpt("charset").withDescription("charset to encoding JSON.").hasArg()
-                .withArgName("charset").create());
-
-        options.addOption(OptionBuilder.withLongOpt("mld").withDescription("save result by MLD mode.").hasArg()
-                .withArgName("mld").create());
+        options.addOption(null, "charset", true, "charset to encoding JSON.");
+        options.addOption(null, "mld", true, "save result by MLD mode.");
 
         // options
-        options.addOption(OptionBuilder.withLongOpt("pretty").withDescription("print pretty format. true/false")
-                .hasArg().withArgName("pretty").create());
-
-        options.addOption(OptionBuilder.withLongOpt("array").withDescription("print document field by json array.")
-                .withArgName("array").create());
-
-        options.addOption(OptionBuilder.withLongOpt("object").withDescription("print document field by json array.")
-                .withArgName("object").create());
+        options.addOption(null, "pretty", false, "print pretty format. true/false");
+        options.addOption(null, "array", false, "print document field by json array.");
+        options.addOption(null, "object", false, "print document field by json array.");
 
         if (extConfig != null) {
             extConfig.init();

@@ -8,7 +8,7 @@ import com.hcse.app.CommonClient;
 import com.hcse.app.ExitException;
 import com.hcse.app.RandomRequestQueue;
 import com.hcse.app.RequestQueue;
-import com.hcse.app.SequenceRequestQueue;
+import com.hcse.app.RoundRequestQueue;
 import com.hcse.protocol.d2.message.D2RequestMessage;
 
 public class ClientMgr extends com.hcse.app.d2.ClientMgr {
@@ -23,7 +23,7 @@ public class ClientMgr extends com.hcse.app.d2.ClientMgr {
         BenchmarkConf conf = (BenchmarkConf) xconf;
         RequestQueue<D2RequestMessage> queue;
         if (conf.mode == 0) {
-            queue = new SequenceRequestQueue<D2RequestMessage>();
+            queue = new RoundRequestQueue<D2RequestMessage>();
         } else {
             queue = new RandomRequestQueue<D2RequestMessage>();
         }

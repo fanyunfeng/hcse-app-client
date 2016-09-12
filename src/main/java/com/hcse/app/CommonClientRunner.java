@@ -15,7 +15,7 @@ public class CommonClientRunner implements ClientRunner {
                 break;
             }
 
-            client.handleRequest(request);
+            client.handleRequest(null, request);
         }
     }
 }

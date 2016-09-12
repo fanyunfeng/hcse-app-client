@@ -1,13 +1,13 @@
 package com.hcse.app;
 
-public interface ClientEvents {
-    void onLanch();
+public interface ClientEvents<Context extends RunnerContext> {
+    void onLanch(Context ctx);
 
-    void onCompleted(boolean emtpy);
+    void onCompleted(Context ctx, boolean emtpy);
 
-    void onFailed();
+    void onFailed(Context ctx);
 
-    void onConnectTimeout();
+    void onConnectTimeout(Context ctx);
 
-    void onRequestTimeout();
+    void onRequestTimeout(Context ctx);
 }

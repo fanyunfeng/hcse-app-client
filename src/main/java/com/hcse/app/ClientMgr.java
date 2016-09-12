@@ -3,8 +3,8 @@ package com.hcse.app;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
-public class BaseClientMgr {
-    protected final static Logger logger = Logger.getLogger(BaseClientMgr.class);
+public class ClientMgr {
+    protected final static Logger logger = Logger.getLogger(ClientMgr.class);
 
     private BaseClientConf config;
     private BaseClient context;
@@ -90,9 +90,9 @@ public class BaseClientMgr {
         try {
             String appClass = "com.hcse.app." + args[0] + ".ClientMgr";
 
-            BaseClientMgr client;
+            ClientMgr client;
 
-            client = (BaseClientMgr) BaseClientMgr.class.getClassLoader().loadClass(appClass).newInstance();
+            client = (ClientMgr) ClientMgr.class.getClassLoader().loadClass(appClass).newInstance();
 
             client.setName(args[0]);
 
