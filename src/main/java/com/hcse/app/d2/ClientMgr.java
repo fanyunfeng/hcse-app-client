@@ -6,6 +6,7 @@ import com.hcse.app.BaseClientConf;
 import com.hcse.app.BaseClient;
 import com.hcse.app.BaseClientMgr;
 import com.hcse.app.CommonClient;
+import com.hcse.app.CommonClientRunner;
 import com.hcse.app.ExitException;
 import com.hcse.app.FileRequestLoader;
 import com.hcse.app.RequestQueue;
@@ -49,7 +50,7 @@ public class ClientMgr extends BaseClientMgr {
     public void parseArg(BaseClientConf conf, BaseClient ctx) throws ExitException {
         super.parseArg(conf, ctx);
     }
-    
+
     public void createService(BaseClientConf conf, CommonClient client) {
         IndexServiceImpl srv = new IndexServiceImpl();
 
@@ -59,7 +60,7 @@ public class ClientMgr extends BaseClientMgr {
 
         client.setService(srv);
     }
-    
+
     protected void createRequestLoader(BaseClientConf conf, CommonClient client) throws ExitException {
         if (conf.file != null) {
             client.setRequestLoader(new FileRequestLoader(conf.file));
@@ -149,6 +150,11 @@ public class ClientMgr extends BaseClientMgr {
         ConstantWeight handler = new ConstantWeight();
 
         client.addDocHandler(handler);
+    }
+
+    protected void createClientRunner(BaseClientConf conf, CommonClient ctx) throws ExitException {
+
+        ctx.setClientRunner(new CommonClientRunner());
     }
 
     @Override

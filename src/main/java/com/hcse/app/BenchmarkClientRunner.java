@@ -6,20 +6,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
-import org.apache.mina.filter.codec.ProtocolCodecFactory;
 
 import com.hcse.app.util.Counter;
 import com.hcse.app.util.CounterManager;
 import com.hcse.app.util.CounterTimer;
 import com.hcse.protocol.BaseRequest;
-import com.hcse.protocol.BaseResponse;
 
-public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage extends BaseResponse, ResponseCodecFactory extends ProtocolCodecFactory>
-        extends CommonClient<RequestMessage, ResponseMessage, ResponseCodecFactory> {
+@SuppressWarnings("rawtypes")
+public class BenchmarkClientRunner implements ClientRunner {
 
-    protected final Logger logger = Logger.getLogger(BenchmarkClient.class);
+    protected final Logger logger = Logger.getLogger(BenchmarkClientRunner.class);
 
-    public BenchmarkClient() {
+    private ClientEvents handler;
+    private CommonClient client;
+    private BenchmarkConf conf;
+
+    public BenchmarkClientRunner() {
         handler = new ClientEvents() {
             long start;
 
@@ -68,13 +70,11 @@ public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage
     private Counter requestTimeoutCounter = new Counter("requestTimeout");
 
     @Override
-    public void init() {
-        super.init();
-    }
+    public void run(BaseClientConf _conf, BaseClient _client) {
+        client = (CommonClient) _client;
+        conf = (BenchmarkConf) _conf;
 
-    @Override
-    public void run(BaseClientConf bconf) {
-        BenchmarkConf conf = (BenchmarkConf) bconf;
+        client.setClientEventHandler(handler);
 
         long stopTimeMillis = System.currentTimeMillis() + conf.testTime;
 
@@ -94,8 +94,6 @@ public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage
         initialThread.interrupt();
 
         executor.shutdownNow();
-
-        super.stop();
     }
 
     private Date stopTime;
@@ -104,7 +102,7 @@ public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage
     private ExecutorService executor = null;
 
     private void dumpInfo() {
-        while (running.get()) {
+        while (client.isRunning()) {
             try {
                 Thread.sleep(dumpInterval);
             } catch (InterruptedException e) {
@@ -131,6 +129,7 @@ public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage
         }
 
         stop();
+        client.stop();
     }
 
     private long queueLength() {
@@ -146,15 +145,15 @@ public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage
     });
 
     class TestTask implements Runnable {
-        RequestMessage req;
+        BaseRequest req;
 
-        public TestTask(RequestMessage req) {
+        public TestTask(BaseRequest req) {
             this.req = req;
         }
 
         @Override
         public void run() {
-            handleRequest(req);
+            client.handleRequest(req);
         }
     }
 
@@ -173,7 +172,9 @@ public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage
 
         long sleep;
 
-        while (running.get()) {
+        RequestQueue<BaseRequest> queue = client.getRequestQueue();
+
+        while (client.isRunning()) {
             long _queueLength = queueLength();
 
             if (_queueLength >= qps * 4) {
@@ -183,7 +184,7 @@ public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage
 
                 for (int i = 0; i < qps; i++) {
 
-                    executor.execute(new TestTask(requestQueue.getRequest()));
+                    executor.execute(new TestTask(queue.getRequest()));
                     initialCounter.increment();
                 }
 
@@ -205,4 +206,5 @@ public class BenchmarkClient<RequestMessage extends BaseRequest, ResponseMessage
             }
         }
     }
+
 }

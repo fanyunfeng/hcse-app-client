@@ -51,6 +51,8 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
 
     protected Map<String, String> shortNameMap = ShortNameMap.getInstance();
 
+    protected ClientRunner runner;
+
     public void addDocHandler(DocHandler handler) {
         handlers.add(handler);
     }
@@ -111,10 +113,18 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
         return shortNameMap;
     }
 
-    protected ClientEvents handler;
+    public ClientRunner getRunner() {
+        return runner;
+    }
+
+    public void setClientRunner(ClientRunner runner) {
+        this.runner = runner;
+    }
+
+    protected ClientEvents clientEventHandler;
 
     public CommonClient() {
-        handler = new ClientEventsNullHandler();
+        clientEventHandler = new ClientEventsNullHandler();
     }
 
     public void init() {
@@ -131,6 +141,18 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
         service.close();
     }
 
+    public ClientEvents getClientEventHandler() {
+        return clientEventHandler;
+    }
+
+    public void setClientEventHandler(ClientEvents clientEventHandler) {
+        this.clientEventHandler = clientEventHandler;
+    }
+
+    public boolean isRunning() {
+        return running.get();
+    }
+
     public void handleRequest(RequestMessage request) {
         ResponseMessage response = null;
 
@@ -138,10 +160,10 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
             response = service.search(request, null);
 
             if (response != null) {
-                handler.onLanch();
+                clientEventHandler.onLanch();
                 List<BaseResponseDoc> list = (List<BaseResponseDoc>) response.getDocs();
 
-                handler.onCompleted(list == null || list.isEmpty());
+                clientEventHandler.onCompleted(list == null || list.isEmpty());
 
                 if (list != null) {
                     for (BaseResponseDoc doc : list) {
@@ -180,24 +202,16 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
 
             }
         } catch (ConnectTimeout e) {
-            handler.onConnectTimeout();
+            clientEventHandler.onConnectTimeout();
         } catch (RequestTimeout e) {
-            handler.onConnectTimeout();
+            clientEventHandler.onConnectTimeout();
         } catch (MalformedURLException | ServiceException e) {
-            handler.onFailed();
+            clientEventHandler.onFailed();
             e.printStackTrace();
         }
     }
 
     public void run(BaseClientConf conf) {
-        while (running.get()) {
-            RequestMessage request = requestQueue.getRequest();
-
-            if (request == null) {
-                break;
-            }
-
-            handleRequest(request);
-        }
+        runner.run(conf, this);
     }
 }
