@@ -18,6 +18,7 @@ import com.hcse.protocol.BaseResponseDoc;
 import com.hcse.protocol.dump.OutputStreamBuilder;
 import com.hcse.protocol.dump.ResponseDump;
 import com.hcse.protocol.handler.DocHandler;
+import com.hcse.protocol.handler.ResponseHandler;
 import com.hcse.service.ConnectTimeout;
 import com.hcse.service.RequestTimeout;
 import com.hcse.service.SearchService;
@@ -47,15 +48,9 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
 
     protected OutputStreamBuilder outputStreamBuilder;
 
-    protected ArrayList<DocHandler> handlers = new ArrayList<DocHandler>();
-
     protected Map<String, String> shortNameMap = ShortNameMap.getInstance();
 
     protected ClientRunner runner;
-
-    public void addDocHandler(DocHandler handler) {
-        handlers.add(handler);
-    }
 
     public SearchService<RequestMessage, ResponseMessage, ResponseCodecFactory> getService() {
         return service;
@@ -128,8 +123,10 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
     }
 
     public void init() {
+        logger.info("client initialize.");
         service.open(clientCodecFactory);
 
+        logger.info("client loading request.");
         requests = requestLoader.loadRequest(shortNameMap, requestFactory);
 
         requestQueue.setRequestList(requests);
@@ -166,31 +163,20 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
                 clientEventHandler.onCompleted(ctx, list == null || list.isEmpty());
 
                 if (list != null) {
+                    for (DocHandler handler : docHandlers) {
+                        handler.reset();
+                    }
+
                     for (BaseResponseDoc doc : list) {
-                        for (DocHandler handler : handlers) {
+                        for (DocHandler handler : docHandlers) {
                             handler.process(doc);
                         }
                     }
 
-                    Collections.sort(list, new Comparator<BaseResponseDoc>() {
-                        @Override
-                        public int compare(BaseResponseDoc o1, BaseResponseDoc o2) {
-                            if (o1.getWeight() == o2.getWeight()) {
-                                if (o1.getMd5Lite() < o2.getMd5Lite()) {
-                                    return -1;
-                                } else if (o1.getMd5Lite() == o2.getMd5Lite()) {
-                                    return 0;
-                                } else {
-                                    return 1;
-                                }
-                            } else if (o1.getWeight() < o2.getWeight()) {
-                                return -1;
-                            } else {
-                                return 1;
-                            }
-                        }
-
-                    });
+                    for (ResponseHandler handler : responseHandler) {
+                        handler.reset();
+                        handler.process(response);
+                    }
 
                     OutputStream os = outputStreamBuilder.creatOutputStream(request.getTag());
 
@@ -212,6 +198,8 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
     }
 
     public void run(BaseClientConf conf) {
+        logger.info("client start.");
         runner.run(conf, this);
+        logger.info("client stopped.");
     }
 }

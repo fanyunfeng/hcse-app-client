@@ -18,14 +18,12 @@ public class BaseClientConf {
     protected Options options = new Options();
     protected CommandLine commandLine;
 
-    protected ExtClientConf extConfig;
-
-    void setExtClientConf(ExtClientConf ext) {
-        extConfig = ext;
-    }
-
     public Options getOptions() {
         return options;
+    }
+
+    public CommandLine getCommandLine() {
+        return commandLine;
     }
 
     public void parseArgs(String[] args) throws ParseException {
@@ -43,6 +41,8 @@ public class BaseClientConf {
         options.addOption("s", "searchString", true, "search string.");
         options.addOption("d", "directory", true, "directory to save result");
 
+        options.addOption(null, "dumpInterval", true, "dump interval(unit [hms]). default:1m");
+
         options.addOption(null, "charset", true, "charset to encoding JSON.");
         options.addOption(null, "mld", true, "save result by MLD mode.");
 
@@ -51,9 +51,7 @@ public class BaseClientConf {
         options.addOption(null, "array", false, "print document field by json array.");
         options.addOption(null, "object", false, "print document field by json array.");
 
-        if (extConfig != null) {
-            extConfig.init();
-        }
+        options.addOption(null, "silent", false, "drop dump message.");
     }
 
     public void printHelp(String name) {
@@ -155,8 +153,25 @@ public class BaseClientConf {
             }
         }
 
-        if (extConfig != null) {
-            extConfig.parse();
+        if (commandLine.hasOption("dumpInterval")) {
+            String value = commandLine.getOptionValue("dumpInterval");
+            dumpInterval = Integer.parseInt(value);
+
+            if (value.endsWith("h")) {
+                dumpInterval *= 60;
+                dumpInterval *= 60;
+                dumpInterval *= 1000;
+
+            } else if (value.endsWith("m")) {
+                dumpInterval *= 60;
+                dumpInterval *= 1000;
+            } else {
+                dumpInterval *= 1000;
+            }
+        }
+
+        if (commandLine.hasOption("silent")) {
+            silent = true;
         }
     }
 
@@ -178,4 +193,5 @@ public class BaseClientConf {
     public int[] mld;
 
     public boolean silent = false;
+    public int dumpInterval = 20 * 1000;
 }

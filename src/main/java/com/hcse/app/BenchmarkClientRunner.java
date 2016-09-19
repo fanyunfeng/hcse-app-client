@@ -98,6 +98,9 @@ public class BenchmarkClientRunner implements ClientRunner {
 
             }
         }
+
+        dump();
+        logger.info("client stopped.");
     }
 
     public void stop() {
@@ -114,6 +117,20 @@ public class BenchmarkClientRunner implements ClientRunner {
     private int dumpInterval;
     private ExecutorService executor = null;
 
+    private void dump() {
+        List<String> dumpContent = CounterManager.getInstance().dump();
+
+        long _queueLength = queueLength();
+
+        if (_queueLength > 0) {
+            logger.info("" + _queueLength + " request queued.");
+        }
+
+        for (String l : dumpContent) {
+            logger.info(l);
+        }
+    }
+
     private void dumpInfo() {
         while (client.isRunning()) {
             try {
@@ -122,17 +139,7 @@ public class BenchmarkClientRunner implements ClientRunner {
                 continue;
             }
 
-            List<String> dumpContent = CounterManager.getInstance().dump();
-
-            long _queueLength = queueLength();
-
-            if (_queueLength > 0) {
-                logger.info("" + _queueLength + " request queued.");
-            }
-
-            for (String l : dumpContent) {
-                logger.info(l);
-            }
+            dump();
 
             Date now = new Date();
 

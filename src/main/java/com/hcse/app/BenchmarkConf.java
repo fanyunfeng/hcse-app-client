@@ -9,7 +9,6 @@ public class BenchmarkConf extends BaseClientConf {
         options.addOption("t", "thread", true, "max thread. default:100");
         options.addOption("q", "qps", true, "request per secode. default:100");
         options.addOption("l", "time", true, "test time(unit [hms]). default:1m");
-        options.addOption(null, "dumpInterval", true, "dump interval(unit [hms]). default:1m");
         options.addOption(null, "sequence", false, "generate request mode");
         options.addOption(null, "random", false, "generate request mode");
     }
@@ -43,23 +42,6 @@ public class BenchmarkConf extends BaseClientConf {
             }
         }
 
-        if (commandLine.hasOption("dumpInterval")) {
-            String value = commandLine.getOptionValue("dumpInterval");
-            dumpInterval = Integer.parseInt(value);
-
-            if (value.endsWith("h")) {
-                dumpInterval *= 60;
-                dumpInterval *= 60;
-                dumpInterval *= 1000;
-
-            } else if (value.endsWith("m")) {
-                dumpInterval *= 60;
-                dumpInterval *= 1000;
-            } else {
-                dumpInterval *= 1000;
-            }
-        }
-
         if (commandLine.hasOption("sequence")) {
             mode = 1;
         }
@@ -72,6 +54,5 @@ public class BenchmarkConf extends BaseClientConf {
     public int mode = 0;
     public int threadNumber = 10;
     public int qps = 100;
-    public int dumpInterval = 20 * 1000;
     public long testTime = 1000 * 60;
 }

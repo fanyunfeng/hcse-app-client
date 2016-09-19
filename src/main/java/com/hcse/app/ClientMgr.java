@@ -3,6 +3,8 @@ package com.hcse.app;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
+import com.hcse.app.ext.ExtensionMgr;
+
 public class ClientMgr {
     protected final static Logger logger = Logger.getLogger(ClientMgr.class);
 
@@ -10,6 +12,8 @@ public class ClientMgr {
     private BaseClient context;
 
     private String name;
+
+    private ExtensionMgr extensions;
 
     public BaseClientConf createConf() {
         return new BaseClientConf();
@@ -61,9 +65,13 @@ public class ClientMgr {
         try {
             init(config, context);
 
+            extensions.init(config.getOptions(), context);
+
             config.parseArgs(args);
 
             parseArg(config, context);
+
+            extensions.parseArgs(config.getCommandLine(), context);
 
             prepare(config, context);
 
@@ -84,6 +92,7 @@ public class ClientMgr {
 
     public static void main(String[] args) {
         if (args.length < 1) {
+            System.err.println("app name is empty.");
             System.exit(1);
         }
 

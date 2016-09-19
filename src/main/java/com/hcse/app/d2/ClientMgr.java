@@ -145,7 +145,7 @@ public class ClientMgr extends com.hcse.app.ClientMgr {
         client.setRequestQueue(queue);
     }
 
-    protected void addDocHandler(BaseClientConf conf, CommonClient client) throws ExitException {
+    protected void addDocHandler(BaseClientConf conf, BaseClient client) throws ExitException {
         ConstantWeight handler = new ConstantWeight();
 
         client.addDocHandler(handler);
