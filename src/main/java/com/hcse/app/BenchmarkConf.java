@@ -9,8 +9,8 @@ public class BenchmarkConf extends BaseClientConf {
         options.addOption("t", "thread", true, "max thread. default:100");
         options.addOption("q", "qps", true, "request per secode. default:100");
         options.addOption("l", "time", true, "test time(unit [hms]). default:1m");
-        options.addOption(null, "sequence", false, "generate request mode");
-        options.addOption(null, "random", false, "generate request mode");
+        options.addOption(null, "sequence", false, "generate request mode.");
+        options.addOption(null, "random", false, "generate request mode.");
     }
 
     @Override

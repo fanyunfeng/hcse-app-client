@@ -29,12 +29,12 @@ public class CounterTimer extends Counter {
     public double averageSpeed() {
         long c = super.get();
 
-        return (double) current / (c * 1000);
+        return (double) current / (c);
     }
 
     public double speed() {
         long c = super.diff();
 
-        return (double) (current - last) / (c * 1000);
+        return (double) (current - last) / (c);
     }
 }

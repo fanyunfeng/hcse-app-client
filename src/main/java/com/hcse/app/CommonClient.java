@@ -154,10 +154,11 @@ public class CommonClient<RequestMessage extends BaseRequest, ResponseMessage ex
         ResponseMessage response = null;
 
         try {
+            clientEventHandler.onLanch(ctx);
+
             response = service.search(request, null);
 
             if (response != null) {
-                clientEventHandler.onLanch(ctx);
                 List<BaseResponseDoc> list = (List<BaseResponseDoc>) response.getDocs();
 
                 clientEventHandler.onCompleted(ctx, list == null || list.isEmpty());

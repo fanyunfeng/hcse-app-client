@@ -13,7 +13,7 @@ public class ClientMgr {
 
     private String name;
 
-    private ExtensionMgr extensions;
+    private ExtensionMgr extensions = new ExtensionMgr();
 
     public BaseClientConf createConf() {
         return new BaseClientConf();

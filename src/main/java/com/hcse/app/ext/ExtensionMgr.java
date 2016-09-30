@@ -14,6 +14,7 @@ public class ExtensionMgr {
 
     public ExtensionMgr() {
         extensions.add(new CommonExt(ConstantWeight.class, true));
+        extensions.add(new CommonExt(SortedMD5.class, true));
     }
 
     public void init(Options options, BaseClient ctx) {

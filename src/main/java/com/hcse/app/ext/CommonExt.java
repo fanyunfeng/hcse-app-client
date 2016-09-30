@@ -19,8 +19,8 @@ public class CommonExt implements Extension {
         this.zlass = name;
         this.def = def;
 
-        withName = "--with-" + zlass.getSimpleName();
-        withoutName = "--without-" + zlass.getSimpleName();
+        withName = "with-" + zlass.getSimpleName();
+        withoutName = "without-" + zlass.getSimpleName();
     }
 
     @Override

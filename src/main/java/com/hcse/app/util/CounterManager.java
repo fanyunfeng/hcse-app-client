@@ -103,7 +103,7 @@ public class CounterManager {
     public String dumpSpeed() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("speed[us/c]");
+        sb.append("speed[ms/c]");
 
         for (Counter c : counters) {
             if (c instanceof CounterTimer) {
@@ -121,7 +121,7 @@ public class CounterManager {
     public String dumpAverageSpeed() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("averageSpeed[us/c]");
+        sb.append("averageSpeed[ms/c]");
         for (Counter c : counters) {
             if (c instanceof CounterTimer) {
                 CounterTimer t = (CounterTimer) c;

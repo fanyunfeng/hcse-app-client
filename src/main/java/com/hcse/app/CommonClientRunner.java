@@ -32,12 +32,12 @@ public class CommonClientRunner implements ClientRunner {
             @Override
             public void onLanch(BenchmarkClientContext ctx) {
                 launchCounter.increment();
-                ctx.start = System.nanoTime();
+                ctx.start = System.currentTimeMillis();
             }
 
             @Override
             public void onCompleted(BenchmarkClientContext ctx, boolean empty) {
-                long now = System.nanoTime();
+                long now = System.currentTimeMillis();
 
                 if (empty) {
                     emptyCounter.increment();
@@ -53,7 +53,7 @@ public class CommonClientRunner implements ClientRunner {
 
             @Override
             public void onFailed(BenchmarkClientContext ctx) {
-                long now = System.nanoTime();
+                long now = System.currentTimeMillis();
                 long usage = now - ctx.start;
                 failedCounter.increment(usage);
 
@@ -119,6 +119,9 @@ public class CommonClientRunner implements ClientRunner {
     @Override
     public void run(BaseClientConf conf, BaseClient c) {
         client = (CommonClient) c;
+
+        dumpThread.start();
+        client.setClientEventHandler(handler);
 
         BenchmarkClientContext ctx = new BenchmarkClientContext();
 

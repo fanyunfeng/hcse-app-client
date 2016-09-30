@@ -19,7 +19,6 @@ import com.hcse.protocol.dump.D2ResponseDump;
 import com.hcse.protocol.dump.FileOutputStreamBuilder;
 import com.hcse.protocol.dump.MLDFileOutputStreamBuilder;
 import com.hcse.protocol.dump.OutputStreamBuilder;
-import com.hcse.protocol.handler.ConstantWeight;
 import com.hcse.service.common.ServiceDiscoveryService;
 import com.hcse.service.d2.IndexServiceImpl;
 import com.hcse.util.sstring.RequestFactory;
@@ -145,12 +144,6 @@ public class ClientMgr extends com.hcse.app.ClientMgr {
         client.setRequestQueue(queue);
     }
 
-    protected void addDocHandler(BaseClientConf conf, BaseClient client) throws ExitException {
-        ConstantWeight handler = new ConstantWeight();
-
-        client.addDocHandler(handler);
-    }
-
     protected void createClientRunner(BaseClientConf conf, CommonClient client) throws ExitException {
 
         client.setClientRunner(new CommonClientRunner());
@@ -177,8 +170,6 @@ public class ClientMgr extends com.hcse.app.ClientMgr {
         createResponseDump(conf, client);
 
         createRequestQueue(conf, client);
-
-        addDocHandler(conf, client);
 
         client.init();
     }
